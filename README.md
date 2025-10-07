@@ -29,19 +29,19 @@ Este proyecto utiliza una arquitectura robusta, con una API RESTful en el backen
 
 La aplicación está construida con un stack moderno y potente:
 
-*   **Backend:** **PHP** con **Laravel 12**
+-   **Backend:** **PHP** con **Laravel 12**
     
-*   **Frontend:** **React 19** con **Vite**
+-   **Frontend:** **React 19** con **Vite**
     
-*   **Base de Datos:** Compatible con **MySQL** y **PostgreSQL**
+-   **Base de Datos:** Compatible con **MySQL** y **PostgreSQL**
     
-*   **API:** Arquitectura **RESTful**
+-   **API:** Arquitectura **RESTful**
     
-*   **Autenticación:** **Laravel Sanctum**
+-   **Autenticación:** **Laravel Sanctum**
     
-*   **Autorización:** **Spatie Laravel Permission**
+-   **Autorización:** **Spatie Laravel Permission**
     
-*   **UI/Estilos:** **Tailwind CSS** y **Shadcn UI**
+-   **UI/Estilos:** **Tailwind CSS** y **Shadcn UI**
     
 
 🚀 Instalación y Puesta en Marcha
