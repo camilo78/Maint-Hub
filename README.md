@@ -72,7 +72,11 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
 
 Bash
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   # Navega a la carpeta del backend  cd backend  # Instala las dependencias de PHP  composer install  # Copia el archivo de variables de entorno  cp .env.example .env  # Genera la clave de la aplicación  php artisan key:generate  # Configura tus credenciales de base de datos en el archivo .env  # DB_CONNECTION=mysql  # DB_HOST=127.0.0.1  # DB_PORT=3306  # DB_DATABASE=maint_hub  # DB_USERNAME=root  # DB_PASSWORD=  # Ejecuta las migraciones y los seeders para poblar la base de datos con datos de prueba  php artisan migrate --seed  # Inicia el servidor del backend  php artisan serve   `
+  # Navega a la carpeta del backend  cd backend  
+  # Instala las dependencias de PHP  composer install  
+  # Copia el archivo de variables de entorno  cp .env.example .env  
+  # Genera la clave de la aplicación  php artisan key:generate  
+  # Configura tus credenciales de base de datos en el archivo .env  # DB_CONNECTION=mysql  # DB_HOST=127.0.0.1  # DB_PORT=3306  # DB_DATABASE=maint_hub  # DB_USERNAME=root  # DB_PASSWORD=  # Ejecuta las migraciones y los seeders para poblar la base de datos con datos de prueba  php artisan migrate --seed  # Inicia el servidor del backend  php artisan serve   `
 
 Tu API estará disponible en http://localhost:8000.
 
