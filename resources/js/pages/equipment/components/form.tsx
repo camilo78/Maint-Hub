@@ -22,7 +22,7 @@ interface Props {
         serial_number: string;
         asset_tag: string;
         location: string;
-        status: 'buen_estado' | 'mal_estado' | 'en_reparacion';
+        status: 'buen_estado' | 'mal_estado' | 'mantenimiento';
         installation_date: string;
         warranty_expires_on: string;
         notes: string;
@@ -159,13 +159,13 @@ export default function EquipmentForm({
                     <select
                         id="status"
                         value={data.status}
-                        onChange={(e) => onChange('status', e.target.value as 'buen_estado' | 'mal_estado' | 'en_reparacion')}
+                        onChange={(e) => onChange('status', e.target.value as 'buen_estado' | 'mal_estado' | 'mantenimiento')}
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         required
                     >
                         <option value="buen_estado">Buen Estado</option>
                         <option value="mal_estado">Mal Estado</option>
-                        <option value="en_reparacion">En Reparación</option>
+                        <option value="mantenimiento">Mantenimiento</option>
                     </select>
                     <InputError message={errors.status} />
                 </div>

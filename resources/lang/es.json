@@ -321,6 +321,7 @@
     "Client Change Warning": "Cambiar el cliente moverá este equipo a otro cliente",
     "Good Condition": "Buen Estado",
     "Bad Condition": "Mal Estado",
+    "Maintenance": "Mantenimiento",
     "Add Equipment": "Agregar Equipo",
     "Tag Placeholder": "Ej: EQ-001, LAP-123",
     "Print Label": "Imprimir Etiqueta",

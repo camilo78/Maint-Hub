@@ -40,8 +40,8 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                         value={currentLang}
                         className="h-8 rounded-md border border-input bg-background px-2 py-1 text-xs flex items-center"
                     >
-                        <option value="es">🇪🇸 {currentLang === 'es' ? 'Español' : 'Spanish'}</option>
-                        <option value="en">🇺🇸 {currentLang === 'es' ? 'Inglés' : 'English'}</option>
+                        <option value="es">{currentLang === 'es' ? 'Español' : 'Spanish'}</option>
+                        <option value="en">{currentLang === 'es' ? 'Inglés' : 'English'}</option>
                     </select>
                     <button
                         onClick={toggleAppearance}

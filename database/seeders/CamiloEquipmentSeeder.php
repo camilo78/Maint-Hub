@@ -21,7 +21,7 @@ class CamiloEquipmentSeeder extends Seeder
         $brands = ['LG', 'Samsung', 'Carrier', 'Daikin', 'Mitsubishi', 'York', 'Trane', 'Lennox'];
         $models = ['Inverter 12000', 'Split 18000', 'Window 9000', 'Cassette 24000', 'Ducted 36000'];
         $locations = ['Sala Principal', 'Dormitorio 1', 'Dormitorio 2', 'Oficina', 'Cocina', 'Comedor', 'Recepción', 'Sala de Juntas'];
-        $statuses = ['buen_estado', 'mal_estado', 'en_reparacion'];
+        $statuses = ['buen_estado', 'mal_estado', 'mantenimiento'];
 
         $descriptions = [
             'Aire 9000 BTU',

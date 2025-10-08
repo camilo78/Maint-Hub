@@ -18,8 +18,8 @@ type Equipment = {
     brand: string | null;
     model: string | null;
     serial_number: string | null;
-    location: string;
-    status: 'buen_estado' | 'mal_estado' | 'en_reparacion';
+    location: string; // Ubicación dentro del inmueble del cliente
+    status: 'buen_estado' | 'mal_estado' | 'mantenimiento';
     installation_date: string | null;
     warranty_expires_on: string | null;
     notes: string | null;
@@ -52,10 +52,10 @@ export default function EquipmentTable({ equipment, onEdit, onDelete }: Props) {
                 return <Badge variant="default" className="bg-green-500">{es['Good Condition']}</Badge>;
             case 'mal_estado':
                 return <Badge variant="secondary" className="bg-red-500">{es['Bad Condition']}</Badge>;
-            case 'en_reparacion':
-                return <Badge variant="destructive" className="bg-yellow-500">{es['Under Repair']}</Badge>;
+            case 'mantenimiento':
+                return <Badge variant="default" className="bg-orange-500 text-white border-orange-500">Mantenimiento</Badge>;
             default:
-                return <Badge variant="secondary">{status}</Badge>;
+                return <Badge variant="secondary">{status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}</Badge>;
         }
     };
 

@@ -63,8 +63,8 @@ class EquipmentSeeder extends Seeder
                 'brand' => 'Samsung',
                 'model' => 'QN55Q80A',
                 'serial_number' => 'TV555444333',
-                'location' => 'Sala de estar',
-                'status' => 'en_reparacion',
+                'location' => 'Sala de estar', // Sala de estar
+                'status' => 'mantenimiento',
                 'installation_date' => now()->subMonths(8),
                 'warranty_expires_on' => now()->addMonths(16),
                 'specifications' => [

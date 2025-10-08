@@ -42,13 +42,10 @@ type Props = {
 export default function Show({ equipment }: Props) {
     const getStatusName = (status: string) => {
         switch(status) {
-            case 'activo': return 'Activo';
-            case 'inactivo': return 'Inactivo';
-            case 'en_reparacion': return 'En Reparación';
-            case 'buen_estado': return 'Buen Estado';
-            case 'mal_estado': return 'Mal Estado';
-            case 'dañado': return 'Dañado';
-            default: return status;
+            case 'mantenimiento': return es['Maintenance'];
+            case 'buen_estado': return es['Good Condition'];
+            case 'mal_estado': return es['Bad Condition'];
+            default: return status.charAt(0).toUpperCase() + status.slice(1);
         }
     };
 
@@ -138,17 +135,12 @@ export default function Show({ equipment }: Props) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'activo':
             case 'buen_estado':
-                return 'bg-green-100 text-green-800 border-green-300';
-            case 'inactivo':
+                return 'bg-green-500 text-gray-800 border-green-500';
             case 'mal_estado':
-            case 'dañado':
-                return 'bg-red-100 text-red-800 border-red-300';
-            case 'en_reparacion':
-                return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-            default:
-                return 'bg-gray-100 text-gray-800 border-gray-300';
+                return 'bg-red-500 border-red-500';
+            case 'mantenimiento':
+                return 'bg-orange-500 text-white border-orange-500';
         }
     };
 

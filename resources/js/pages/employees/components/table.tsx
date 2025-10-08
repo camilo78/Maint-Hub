@@ -117,9 +117,7 @@ export default function EmployeeTable({ employees, onView, onEdit, onDelete }: P
                                             <a href={`tel:${employee.phone}`} className="text-blue-600">{employee.phone}</a>
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
                                                 {employee.career}
-                                            </span>
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <span className="font-mono text-sm">{employee.employee_id}</span>

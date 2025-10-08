@@ -99,11 +99,11 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                                     <TableCell className="text-center"><a href={`tel:${user.phone}`} className="text-blue-600">{user.phone}</a></TableCell>
                                     <TableCell className="text-center">
                                         <span className={`px-2 py-1 rounded-full text-xs ${
-                                            user.tipo === 'corporativo' ? 'bg-blue-100 text-blue-800' : 
-                                            user.tipo === 'extranjero' ? 'bg-purple-100 text-purple-800' : 
-                                            'bg-green-100 text-green-800'
+                                            user.tipo === 'corporativo' ? 'bg-blue-900 text-white': 
+                                            user.tipo === 'extranjero' ? 'bg-purple-900 text-white' : 
+                                            'bg-green-900 text-white'
                                         }`}>
-                                            {user.tipo === 'corporativo' ? es['Corporate'] : 
+                                            {user.tipo === 'corporativo' ? es['Corporate'] + ' ⭐': 
                                              user.tipo === 'extranjero' ? es['Foreign'] : 
                                              es['Particular']}
                                         </span>

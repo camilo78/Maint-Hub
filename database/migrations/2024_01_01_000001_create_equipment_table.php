@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('brand')->nullable();
             $table->string('model')->nullable();
             $table->string('serial_number')->nullable();
-            $table->string('location')->comment('Ubicación dentro del inmueble del cliente');
-            $table->enum('status', ['buen_estado', 'mal_estado', 'en_reparacion'])->default('buen_estado');
+            $table->string('location')->comment('Ubicación dentro del inmueble del cliente'); // Ubicación dentro del inmueble del cliente
+            $table->enum('status', ['buen_estado', 'mal_estado', 'mantenimiento'])->default('buen_estado');
             $table->date('installation_date')->nullable();
             $table->date('warranty_expires_on')->nullable();
             $table->text('notes')->nullable();

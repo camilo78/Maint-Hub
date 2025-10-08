@@ -81,7 +81,7 @@ class Equipment extends Model
         return match($this->status) {
             'buen_estado' => 'success',
             'mal_estado' => 'destructive',
-            'en_reparacion' => 'warning',
+            'mantenimiento' => 'warning',
             default => 'secondary'
         };
     }

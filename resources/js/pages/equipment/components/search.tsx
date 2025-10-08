@@ -57,9 +57,9 @@ export default function EquipmentSearch({
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 >
                     <option value="">{es['All Status']}</option>
-                    <option value="activo">{es['Active']}</option>
-                    <option value="inactivo">{es['Inactive']}</option>
-                    <option value="en_reparacion">{es['Under Repair']}</option>
+                    <option value="activo">{es['Good Condition']}</option>
+                    <option value="inactivo">{es['Bad Condition']}</option>
+                    <option value="en_reparacion">{es['Mantenance']}</option>
                 </select>
             </div>
 

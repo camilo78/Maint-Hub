@@ -50,7 +50,7 @@ class EquipmentFactory extends Factory
             'model' => $this->faker->bothify('??###'),
             'serial_number' => $this->faker->bothify('SN########'),
             'location' => $this->faker->randomElement(['Sala', 'Dormitorio 1', 'Dormitorio 2', 'Cocina', 'Oficina']),
-            'status' => $this->faker->randomElement(['buen_estado', 'mal_estado', 'en_reparacion']),
+            'status' => $this->faker->randomElement(['buen_estado', 'mal_estado', 'mantenimiento']),
             'installation_date' => $this->faker->dateTimeBetween('-2 years', 'now'),
             'warranty_expires_on' => $this->faker->dateTimeBetween('now', '+2 years'),
             'specifications' => [
