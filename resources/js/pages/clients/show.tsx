@@ -62,6 +62,8 @@ type Props = {
 
 export default function Show({ user, equipment, equipment_search, show_all }: Props) {
     const [search, setSearch] = useState(equipment_search || '');
+    const [isExporting, setIsExporting] = useState(false);
+    const [isExportingPdf, setIsExportingPdf] = useState(false);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -164,7 +166,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                 <Button variant="outline" className="hover:bg-gray-100 dark:hover:bg-gray-800"asChild>
                                     <Link href={`/admin/clients/${user.id}/edit`}>
                                         <Edit className="h-4 w-4 mr-2" />
-                                        Editar
+                                        {es['Edit']}
                                     </Link>
                                 </Button>
                             </div>
@@ -288,22 +290,88 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                 {equipment.data.length > 0 && (
                                                     <BulkQRGenerator equipment={equipment.data} />
                                                 )}
+                                                {equipment.data.length > 0 && (
+                                                    <Button 
+                                                        size="sm" 
+                                                        className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                                                        disabled={isExporting}
+                                                        onClick={async () => {
+                                                            setIsExporting(true);
+                                                            try {
+                                                                const link = document.createElement('a');
+                                                                link.href = `/admin/clients/${user.id}/export-equipment`;
+                                                                link.download = '';
+                                                                document.body.appendChild(link);
+                                                                link.click();
+                                                                document.body.removeChild(link);
+                                                                setTimeout(() => setIsExporting(false), 2000);
+                                                            } catch (error) {
+                                                                setIsExporting(false);
+                                                            }
+                                                        }}
+                                                    >
+                                                        {isExporting ? (
+                                                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                        ) : (
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                        )}
+                                                        {isExporting ? 'Generando...' : 'Excel'}
+                                                    </Button>
+                                                )}
+                                                {equipment.data.length > 0 && (
+                                                    <Button 
+                                                        size="sm" 
+                                                        className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+                                                        disabled={isExportingPdf}
+                                                        onClick={async () => {
+                                                            setIsExportingPdf(true);
+                                                            try {
+                                                                const link = document.createElement('a');
+                                                                link.href = `/admin/clients/${user.id}/export-equipment-pdf`;
+                                                                link.download = '';
+                                                                document.body.appendChild(link);
+                                                                link.click();
+                                                                document.body.removeChild(link);
+                                                                setTimeout(() => setIsExportingPdf(false), 2000);
+                                                            } catch (error) {
+                                                                setIsExportingPdf(false);
+                                                            }
+                                                        }}
+                                                    >
+                                                        {isExportingPdf ? (
+                                                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                        ) : (
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                        )}
+                                                        {isExportingPdf ? 'Generando...' : 'PDF'}
+                                                    </Button>
+                                                )}
                                                 {show_all ? (
-                                                    <Button size="sm" variant="outline" className="hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100" asChild>
+                                                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white" asChild>
                                                         <Link href={`/admin/clients/${user.id}`} className="flex items-center gap-2">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                             </svg>
-                                                            Ver Paginado
+                                                            {es['Paginated']}
                                                         </Link>
                                                     </Button>
                                                 ) : (
-                                                    <Button size="sm" variant="outline" className="hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100" asChild>
+                                                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white" asChild>
                                                         <Link href={`/admin/clients/${user.id}?show_all=1`} className="flex items-center gap-2">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                                                             </svg>
-                                                            Ver Todos
+                                                            {es['All']}
                                                         </Link>
                                                     </Button>
                                                 )}
@@ -320,7 +388,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                             <form onSubmit={handleSearch} className="flex gap-2 max-w-md">
                                                 <Input
                                                     type="text"
-                                                    placeholder="Buscar por descripción, etiqueta, categoría, estado..."
+                                                    placeholder={es['Search by description, tag, category, status...']}
                                                     value={search}
                                                     onChange={(e) => setSearch(e.target.value)}
                                                     className="flex-1 text-sm"
@@ -360,7 +428,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                         <tr className="border-b">
                                                             <th className="text-left p-2">{es['Tag']}</th>
                                                             <th className="text-left p-2">{es['Brand']}/{es['Model']}</th>
-                                                            <th className="text-left p-2">Descripción</th>
+                                                            <th className="text-left p-2">{es['Description']}</th>
                                                             <th className="text-left p-2">{es['Category']}</th>
                                                             <th className="text-left p-2">{es['Status']}</th>
                                                             <th className="text-left p-2">{es['Actions']}</th>
@@ -380,7 +448,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                                     </td>
                                                                     <td className="p-2">
                                                                         <p className="text-gray-700 dark:text-gray-300 text-xs">
-                                                                            {item.description || <span className="italic text-gray-500">Sin descripción</span>}
+                                                                            {item.description || <span className="italic text-gray-500">{es['No description']}</span>}
                                                                         </p>
                                                                     </td>
                                                                     <td className="p-2">
@@ -428,7 +496,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                             )}
                                         </>
                                     ) : (
-                                        <p className="text-sm text-gray-500 italic text-center py-8">{es['No equipment found.']}</p>
+                                        <p className="text-sm text-gray-500 italic text-center py-8">{es['No equipment found']}</p>
                                     )}
                                 </div>
                             </div>

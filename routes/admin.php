@@ -12,6 +12,8 @@ Route::middleware(['auth', 'verified', 'role:Admin|Superadmin'])->prefix('admin'
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
     Route::resource('clients', ClientController::class);
+    Route::get('clients/{client}/export-equipment', [ClientController::class, 'exportEquipment'])->name('clients.export-equipment');
+    Route::get('clients/{client}/export-equipment-pdf', [ClientController::class, 'exportEquipmentPdf'])->name('clients.export-equipment-pdf');
     Route::resource('employees', EmployeeController::class);
 });
 

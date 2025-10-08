@@ -247,6 +247,7 @@
     "Failed to delete equipment": "Error al eliminar equipo",
     "A list of all equipment.": "Lista de todos los equipos.",
     "No equipment found.": "No se encontraron equipos.",
+    "No equipment found": "No se encontraron equipos",
     "equipment": "equipos",
     "Equipment Information": "Información del Equipo",
     "Brand": "Marca",
@@ -336,5 +337,11 @@
     "restore": "restaurar",
     "force_delete": "eliminar permanentemente",
     "bulk_delete": "eliminar en lote",
-    "bulk_update": "actualizar en lote"
+    "bulk_update": "actualizar en lote",
+    "All": "Todos",
+    "Paginated": "Paginado",
+    "Description": "Descripción",
+    "No description": "Sin descripción",
+    "No equipment found": "No se encontraron equipos",
+    "Search by description, tag, category, status...": "Buscar por descripción, etiqueta, categoría, estado..."
 }
