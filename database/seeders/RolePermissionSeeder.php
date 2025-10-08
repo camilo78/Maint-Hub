@@ -43,25 +43,14 @@ class RolePermissionSeeder extends Seeder
         $roles = $this->rolesService->createPredefinedRoles();
 
         // Asignar rol de superadmin al usuario Super Admin si existe
-        $user = User::where('name', 'Super Admin')->first();
+        // Nota: El UsersSeeder ya asigna el rol al superadmin 'Camilo Alvarado'.
+        // Esta lógica podría ser redundante o buscar un usuario que no existe.
+        $user = User::where('email', 'camilo.alvarado0501@gmail.com')->first();
         if ($user) {
             $this->command->info('Asignando rol Superadmin al usuario Super Admin...');
             $user->assignRole($roles['superadmin']);
         }
 
-        // Asignar roles aleatorios a otros usuarios existentes
-        $this->command->info('Asignando roles aleatorios a otros usuarios...');
-        $availableRoles = ['Admin', 'Client']; // Excluir Superadmin de asignación aleatoria
-        $users = User::all();
-        
-        foreach ($users as $user) {
-            if (!$user->hasRole('Superadmin')) {
-                // Obtener un rol aleatorio de los roles disponibles
-                $randomRole = $availableRoles[array_rand($availableRoles)];
-                $user->assignRole($randomRole);
-            }
-        }
-
-        $this->command->info('¡Roles y Permisos creados exitosamente!');
+        $this->command->info('¡Roles y Permisos creados exitosamente! Los usuarios de prueba tienen roles asignados por su Factory.');
     }
 }

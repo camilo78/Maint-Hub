@@ -8,6 +8,9 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 
+use App\Exports\EquipmentExport;
+use Maatwebsite\Excel\Facades\Excel;
+
 use App\Models\User;
 
 /**
@@ -192,5 +195,22 @@ class ClientController extends Controller
         $client->delete();
         
         return back()->with('success', 'Cliente eliminado exitosamente.');
+    }
+
+    /**
+     * Export equipment for a specific client to an Excel file.
+     *
+     * @param User $client
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportEquipment(User $client)
+    {
+        if (!$client->hasRole('Client')) {
+            abort(404);
+        }
+
+        $fileName = 'equipos-' . str_replace(' ', '-', strtolower($client->name)) . '-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new EquipmentExport($client->id), $fileName);
     }
 }

@@ -33,20 +33,17 @@ class UserService
     }
     public function getUsers(): LengthAwarePaginator
     {
-        $query = User::query();
         $search = request()->input('search');
-
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%");
-        }
-
         $role = request()->input('role');
-        if ($role) {
-            $query->whereHas('roles', function ($q) use ($role) {
-                $q->where('name', $role);
+
+        $query = User::query()
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->when($role, function ($query, $role) {
+                $query->whereHas('roles', fn($q) => $q->where('name', $role));
             });
-        }
 
         return $query->latest()->paginate(config('settings.default_pagination') ?? 10);
     }

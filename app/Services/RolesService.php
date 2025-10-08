@@ -111,7 +111,7 @@ class RolesService
      */
     public function getPaginatedRolesWithUserCount(string $search = null, int $perPage = 10): LengthAwarePaginator
     {
-        $query = Role::query()->with('permissions');
+        $query = Role::query()->with('permissions')->withCount('users');
 
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%');
@@ -122,14 +122,8 @@ class RolesService
             $query->whereNotIn('name', ['Admin', 'Superadmin']);
         }
 
-        $roles = $query->paginate($perPage);
-
-        // Agregar conteo de usuarios a cada rol
-        foreach ($roles as $role) {
-            $role->user_count = $this->countUsersInRole($role);
-        }
-
-        return $roles;
+        // El conteo de usuarios ya viene en la propiedad 'users_count' gracias a withCount()
+        return $query->paginate($perPage);
     }
 
     /**
@@ -142,11 +136,7 @@ class RolesService
         $roles = [];
 
         // 1. Rol Superadmin - tiene todos los permisos
-        $allPermissionNames = [];
-        foreach ($this->permissionService->getAllPermissions() as $permission) {
-           $allPermissionNames[] = $permission;  
-        }
-
+        $allPermissionNames = $this->permissionService->getAllPermissions();
         $roles['superadmin'] = $this->createRole('Superadmin', $allPermissionNames);
 
         // 2. Rol Admin - tiene casi todos los permisos excepto algunos críticos
@@ -195,21 +185,12 @@ class RolesService
         switch ($roleName) {
             case 'superadmin':
                 // Todos los permisos
-                $allPermissionNames = [];
-                foreach ($this->permissionService->getAllPermissions() as $permission) {
-                    $allPermissionNames[] = $permission;
-                }
-                return $allPermissionNames;
+                return $this->permissionService->getAllPermissions();
 
             case 'admin':
                 // Todos excepto algunos permisos críticos
-                $adminExcludedPermissions = [
-                    'user.delete',
-                ];
-                $allPermissionNames = [];
-                foreach ($this->permissionService->getAllPermissions() as $permission) {
-                    $allPermissionNames[] = $permission;
-                }
+                $adminExcludedPermissions = ['user.delete'];
+                $allPermissionNames = $this->permissionService->getAllPermissions();
                 return array_diff($allPermissionNames, $adminExcludedPermissions);
 
             case 'client':

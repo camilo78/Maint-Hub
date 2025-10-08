@@ -161,7 +161,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                         {es['Back']}
                                     </Link>
                                 </Button>
-                                <Button asChild>
+                                <Button variant="outline" className="hover:bg-gray-100 dark:hover:bg-gray-800"asChild>
                                     <Link href={`/admin/clients/${user.id}/edit`}>
                                         <Edit className="h-4 w-4 mr-2" />
                                         Editar
@@ -325,7 +325,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                     onChange={(e) => setSearch(e.target.value)}
                                                     className="flex-1 text-sm"
                                                 />
-                                                <Button type="submit" size="sm" variant="outline" className="hover:bg-accent hover:text-accent-foreground px-3">
+                                                <Button type="submit" variant="outline" className="hover:bg-accent hover:text-accent-foreground px-3">
                                                     <Search className="h-4 w-4" />
                                                 </Button>
                                                 {search && (
@@ -358,7 +358,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                 <table className="w-full text-xs">
                                                     <thead>
                                                         <tr className="border-b">
-                                                            <th className="text-left p-2">{es['Asset Tag']}</th>
+                                                            <th className="text-left p-2">{es['Tag']}</th>
                                                             <th className="text-left p-2">{es['Brand']}/{es['Model']}</th>
                                                             <th className="text-left p-2">Descripción</th>
                                                             <th className="text-left p-2">{es['Category']}</th>
@@ -393,8 +393,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                                     </td>
                                                                     <td className="p-2">
                                                                         <Button size="sm" variant="outline" onClick={() => router.get(`/equipment/${item.id}`)}>
-                                                                            <Eye className="h-3 w-3 mr-1" />
-                                                                            {es['View']}
+                                                                            <Eye className="h-3 w-3" />
                                                                         </Button>
                                                                     </td>
                                                                 </tr>

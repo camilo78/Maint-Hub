@@ -48,7 +48,7 @@ class PermissionService
      *
      * @return Collection
      */
-    public function getAllPermissionModels(): Collection
+    public function getAllPermissionsFromDatabase(): Collection
     {
         return Permission::all();
     }

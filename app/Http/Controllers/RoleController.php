@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Inertia\Inertia;
 use App\Services\RolesService;
 use App\Services\PermissionService;
@@ -30,7 +29,7 @@ class RoleController extends Controller
         $search = request()->input('search') !== '' ? request()->input('search') : null;
         
         $roles = $this->rolesService->getPaginatedRolesWithUserCount($search, 10);
-        $permissions = $this->permissionService->getAllPermissionModels();
+        $permissions = $this->permissionService->getAllPermissionsFromDatabase();
 
         return Inertia::render('roles/Index', [
             'roles' => $roles,

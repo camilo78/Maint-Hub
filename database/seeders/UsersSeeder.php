@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 
@@ -34,7 +35,7 @@ class UsersSeeder extends Seeder
             'tipo' => 'particular',                          // Tipo de usuario
             'rtn_dni_passport' => '0501199912345',           // DNI (13 dígitos)
             'address' => 'Tegucigalpa, Honduras',            // Dirección
-            'password' => bcrypt('milogaqw12'),              // Contraseña encriptada
+            'password' => Hash::make('milogaqw12'),          // Contraseña encriptada
         ]);
 
         // Crear usuario Admin (acceso administrativo limitado)
@@ -45,7 +46,7 @@ class UsersSeeder extends Seeder
             'tipo' => 'corporativo',                         // Tipo corporativo
             'rtn_dni_passport' => '08011999123456',          // RTN (14 dígitos)
             'address' => 'San Pedro Sula, Honduras',         // Dirección
-            'password' => bcrypt('admin'),                   // Contraseña encriptada
+            'password' => Hash::make('admin'),               // Contraseña encriptada
         ]);
 
         // Crear usuario regular (acceso básico)
@@ -56,7 +57,7 @@ class UsersSeeder extends Seeder
             'tipo' => 'particular',                          // Tipo particular
             'rtn_dni_passport' => '0801199987654',           // DNI (13 dígitos)
             'address' => 'La Ceiba, Honduras',               // Dirección
-            'password' => bcrypt('user'),                    // Contraseña encriptada
+            'password' => Hash::make('user'),                // Contraseña encriptada
         ]);
         
         // Asignar roles a los usuarios principales
