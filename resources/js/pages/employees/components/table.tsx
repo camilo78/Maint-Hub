@@ -101,7 +101,7 @@ export default function EmployeeTable({ employees, onView, onEdit, onDelete }: P
                                         <TableCell>
                                             <div>
                                                 <div className="font-medium">{employee.name}</div>
-                                                <div className="text-xs text-muted-foreground">{es['Permissions'] || 'Permisos'}: {employee.permissions.length}</div>
+                                                <div className="text-xs text-muted-foreground">{employee.rtn_dni_passport}</div>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-center">
@@ -116,7 +116,7 @@ export default function EmployeeTable({ employees, onView, onEdit, onDelete }: P
                                         <TableCell className="text-center">
                                             <a href={`tel:${employee.phone}`} className="text-blue-600">{employee.phone}</a>
                                         </TableCell>
-                                        <TableCell className="text-center">
+                                        <TableCell className="text-center max-w-xs whitespace-normal">
                                                 {employee.career}
                                         </TableCell>
                                         <TableCell className="text-center">

@@ -454,12 +454,12 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                                     <td className="p-2">
                                                                         <Badge variant="outline" className="text-xs">{item.category}</Badge>
                                                                     </td>
-                                                                    <td className="p-2">
+                                                                    <td className="p-2 text-center">
                                                                         <Badge variant="outline" className={`text-xs ${statusInfo.className}`}>
                                                                             {statusInfo.label}
                                                                         </Badge>
                                                                     </td>
-                                                                    <td className="p-2">
+                                                                    <td className="p-2 text-center">
                                                                         <Button size="sm" variant="outline" onClick={() => router.get(`/equipment/${item.id}`)}>
                                                                             <Eye className="h-3 w-3" />
                                                                         </Button>

@@ -99,7 +99,7 @@ export default function EquipmentTable({ equipment, onEdit, onDelete }: Props) {
                                             </div>
                                             {item.serial_number && (
                                                 <div className="text-xs text-muted-foreground">
-                                                    {es['S/N']}: {item.serial_number}
+                                                    Serie: {item.serial_number}
                                                 </div>
                                             )}
                                         </div>

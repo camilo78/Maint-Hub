@@ -49,15 +49,21 @@ class Equipment extends Model
     public static function generateAssetTag($clientId)
     {
         $client = User::find($clientId);
-        if (!$client) return null;
+        if (!$client) return 'EQ0001';
         
-        // Obtener iniciales del nombre completo
-        $nameParts = explode(' ', trim($client->name));
+        // Limpiar y obtener iniciales del nombre completo
+        $name = preg_replace('/[^a-zA-Z\s]/', '', $client->name);
+        $nameParts = explode(' ', trim($name));
         $initials = '';
         foreach ($nameParts as $part) {
             if (!empty($part)) {
                 $initials .= strtoupper(substr($part, 0, 1));
             }
+        }
+        
+        // Si no hay iniciales válidas, usar EQ por defecto
+        if (empty($initials)) {
+            $initials = 'EQ';
         }
         
         // Obtener el siguiente correlativo para este cliente

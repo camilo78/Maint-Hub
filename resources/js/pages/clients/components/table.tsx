@@ -93,7 +93,7 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                                         <TableCell>
                                             <div>
                                                 <div className="font-medium">{user.name}</div>
-                                                <div className="text-xs text-muted-foreground">{es['Permissions']}: {user.permissions.length}</div>
+                                                <div className="text-xs text-muted-foreground">{user.rtn_dni_passport}</div>
                                             </div>
                                         </TableCell>
                                     <TableCell className="text-center"><a href={`tel:${user.phone}`} className="text-blue-600">{user.phone}</a></TableCell>

@@ -19,7 +19,7 @@ class EquipmentSeeder extends Seeder
         $equipments = [
             [
                 'client_id' => $clients->random()->id,
-                'asset_tag' => null, // Se generará automáticamente
+                'asset_tag' => 'AC0001',
                 'category' => 'Aire Acondicionado',
                 'description' => 'Aire 12000 BTU',
                 'brand' => 'LG',
@@ -38,13 +38,13 @@ class EquipmentSeeder extends Seeder
             ],
             [
                 'client_id' => $clients->random()->id,
-                'asset_tag' => null, // Se generará automáticamente
-                'category' => 'Línea Blanca',
+                'asset_tag' => 'LV0001',
+                'category' => 'Linea Blanca',
                 'description' => 'Lavadora 15 kg',
                 'brand' => 'Samsung',
                 'model' => 'WF15T4000AV',
                 'serial_number' => 'LV987654321',
-                'location' => 'Área de lavado',
+                'location' => 'Area de lavado',
                 'status' => 'buen_estado',
                 'installation_date' => now()->subYear(),
                 'warranty_expires_on' => now()->addMonths(12),
@@ -57,13 +57,13 @@ class EquipmentSeeder extends Seeder
             ],
             [
                 'client_id' => $clients->random()->id,
-                'asset_tag' => null, // Se generará automáticamente
+                'asset_tag' => 'TV0001',
                 'category' => 'TV y Video',
                 'description' => 'TV 55 pulgadas',
                 'brand' => 'Samsung',
                 'model' => 'QN55Q80A',
                 'serial_number' => 'TV555444333',
-                'location' => 'Sala de estar', // Sala de estar
+                'location' => 'Sala de estar',
                 'status' => 'mantenimiento',
                 'installation_date' => now()->subMonths(8),
                 'warranty_expires_on' => now()->addMonths(16),
@@ -77,10 +77,6 @@ class EquipmentSeeder extends Seeder
         ];
 
         foreach ($equipments as $equipment) {
-            // Generar asset_tag si no existe
-            if (empty($equipment['asset_tag'])) {
-                $equipment['asset_tag'] = Equipment::generateAssetTag($equipment['client_id']);
-            }
             Equipment::create($equipment);
         }
     }

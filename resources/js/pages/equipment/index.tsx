@@ -9,6 +9,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { type BreadcrumbItem } from '@/types';
 import { toast } from 'sonner';
 import es from '@/lang/es';
+import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 
 type Client = {
     id: number;
@@ -59,8 +60,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Index({ equipment, categories, search: initialSearch, category: initialCategory, status: initialStatus }: Props) {
     const [search, setSearch] = useState(initialSearch ?? '');
-    const [category, setCategory] = useState(initialCategory ?? '');
-    const [status, setStatus] = useState(initialStatus ?? '');
+    const [category, setCategory] = useState(initialCategory ?? 'all');
+    const [status, setStatus] = useState(initialStatus ?? 'all');
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
 
@@ -70,8 +71,8 @@ export default function Index({ equipment, categories, search: initialSearch, ca
         e.preventDefault();
         const params: { search?: string; category?: string; status?: string } = {};
         if (search.trim()) params.search = search.trim();
-        if (category) params.category = category;
-        if (status) params.status = status;
+        if (category && category !== 'all') params.category = category;
+        if (status && status !== 'all') params.status = status;
         router.get('/equipment', params, { preserveScroll: true });
     };
 
@@ -104,7 +105,13 @@ export default function Index({ equipment, categories, search: initialSearch, ca
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={es['Manage Equipment']} />
-            <div className="space-y-6 p-6">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                <div className="border-sidebar-border/70 dark:border-sidebar-border bg-background relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border p-4 md:min-h-min">
+                    <div className="absolute inset-0 size-full stroke-neutral-900/10 dark:stroke-neutral-100/10">
+                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/10 dark:stroke-neutral-100/10" />
+                    </div>
+
+                    <div className="relative z-10 space-y-6">
                 <Toaster position="top-right" />
                 
                 <EquipmentSearch
@@ -113,8 +120,8 @@ export default function Index({ equipment, categories, search: initialSearch, ca
                     status={status}
                     categories={categories}
                     onSearchChange={(e) => setSearch(e.target.value)}
-                    onCategoryChange={(e) => setCategory(e.target.value)}
-                    onStatusChange={(e) => setStatus(e.target.value)}
+                    onCategoryChange={(value) => setCategory(value === 'all' ? '' : value)}
+                    onStatusChange={(value) => setStatus(value === 'all' ? '' : value)}
                     onSubmit={handleSearch}
                 />
 
@@ -150,6 +157,8 @@ export default function Index({ equipment, categories, search: initialSearch, ca
                         </DialogContent>
                     </Dialog>
                 )}
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );

@@ -89,7 +89,7 @@ export default function Create({ categories, descriptions, clients }: Props) {
                             </Button>
                         </div>
 
-                        <div className="bg-white dark:bg-gray-900 rounded-lg border p-6">
+                        <div className="relative z-10 space-y-6">
                             <EquipmentForm
                                 data={data}
                                 errors={errors}

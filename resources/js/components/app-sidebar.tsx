@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, BookKey, Users, BookOpen, Folder, Wrench, Monitor } from 'lucide-react';
+import { LayoutGrid, BookKey, Users, BookOpen, Folder, Wrench, Monitor, Settings } from 'lucide-react';
 import AppLogo from './app-logo';
 import { type SharedData } from '@/types';
 import es from '@/lang/es';
@@ -24,6 +24,11 @@ export function AppSidebar() {
             title: 'Equipos',
             href: '/equipment',
             icon: Monitor,
+        },
+        {
+            title: 'Maintenances',
+            href: '/maintenances',
+            icon: Settings,
         },
         ...(isAdmin ? [{
             title: es['Clients'],    

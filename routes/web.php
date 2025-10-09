@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MaintenanceController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -12,6 +13,9 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Maintenance routes
+    Route::resource('maintenances', MaintenanceController::class);
 });
 
 

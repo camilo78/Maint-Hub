@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import TipTapEditor from '@/components/tiptap-editor';
 
@@ -79,35 +81,35 @@ export default function EquipmentForm({
     };
 
     return (
-        <form id="equipment-form" onSubmit={onSubmit} className="space-y-4 py-2">
-            {/* Todos los campos en 3 columnas */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Cliente */}
-                <div className="space-y-2">
-                    <Label htmlFor="client_id">{es['Client']} *</Label>
-                    <select
-                        id="client_id"
-                        value={data.client_id}
-                        onChange={(e) => onChange('client_id', e.target.value)}
-                        onFocus={() => setShowClientWarning(true)}
-                        onBlur={() => setShowClientWarning(false)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                        required
-                    >
-                        <option value="">{es['Select Client']}</option>
-                        {clients.map(client => (
-                            <option key={client.id} value={client.id}>
-                                {client.name}
-                            </option>
-                        ))}
-                    </select>
-                    {isEditing && showClientWarning && (
-                        <div className="text-xs text-muted-foreground bg-muted/50 border border-muted rounded p-2">
-                            ⚠️ {es['Client Change Warning'] || 'Cambiar el cliente moverá este equipo a otro cliente'}
+        <form id="equipment-form" onSubmit={onSubmit} className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>{es['Basic Information']}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Cliente */}
+                        <div className="space-y-2">
+                            <Label htmlFor="client_id">{es['Client']} *</Label>
+                            <Select value={data.client_id} onValueChange={(value) => onChange('client_id', value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder={es['Select Client']} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {clients.map(client => (
+                                        <SelectItem key={client.id} value={client.id.toString()}>
+                                            {client.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {isEditing && showClientWarning && (
+                                <div className="text-xs text-muted-foreground bg-muted/50 border border-muted rounded p-2">
+                                    ⚠️ {es['Client Change Warning'] || 'Cambiar el cliente moverá este equipo a otro cliente'}
+                                </div>
+                            )}
+                            <InputError message={errors.client_id} />
                         </div>
-                    )}
-                    <InputError message={errors.client_id} />
-                </div>
 
                 {/* Categoría */}
                 <div className="space-y-2">
@@ -118,7 +120,7 @@ export default function EquipmentForm({
                         list="categories"
                         value={data.category}
                         onChange={(e) => onChange('category', e.target.value)}
-                        placeholder="Escribir o seleccionar categoría..."
+                        placeholder={es['Select Category'] || 'Escribir o seleccionar categoría...'}
                         className="w-full"
                         required
                     />
@@ -132,7 +134,7 @@ export default function EquipmentForm({
 
                 {/* Descripción */}
                 <div className="space-y-2">
-                    <Label htmlFor="description">Descripción</Label>
+                    <Label htmlFor="description">{es['Description']}</Label>
                     <div className="relative">
                         <Input
                             id="description"
@@ -140,7 +142,7 @@ export default function EquipmentForm({
                             list="descriptions"
                             value={data.description}
                             onChange={(e) => onChange('description', e.target.value)}
-                            placeholder="Ej: TV 50 pulgadas, Aire 12000 BTU..."
+                            placeholder={es['Description Placeholder'] || 'Ej: TV 50 pulgadas, Aire 12000 BTU...'}
                             className="w-full"
                             style={{ minWidth: '100%' }}
                         />
@@ -153,22 +155,21 @@ export default function EquipmentForm({
                     <InputError message={errors.description} />
                 </div>
 
-                {/* Estado */}
-                <div className="space-y-2">
-                    <Label htmlFor="status">{es['Status']} *</Label>
-                    <select
-                        id="status"
-                        value={data.status}
-                        onChange={(e) => onChange('status', e.target.value as 'buen_estado' | 'mal_estado' | 'mantenimiento')}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                        required
-                    >
-                        <option value="buen_estado">Buen Estado</option>
-                        <option value="mal_estado">Mal Estado</option>
-                        <option value="mantenimiento">Mantenimiento</option>
-                    </select>
-                    <InputError message={errors.status} />
-                </div>
+                        {/* Estado */}
+                        <div className="space-y-2">
+                            <Label htmlFor="status">{es['Status']} *</Label>
+                            <Select value={data.status} onValueChange={(value) => onChange('status', value as 'buen_estado' | 'mal_estado' | 'mantenimiento')}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="buen_estado">{es['Good Condition']}</SelectItem>
+                                    <SelectItem value="mal_estado">{es['Bad Condition']}</SelectItem>
+                                    <SelectItem value="mantenimiento">{es['Maintenance']}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.status} />
+                        </div>
 
                 {/* Marca */}
                 <div className="space-y-2">
@@ -265,32 +266,42 @@ export default function EquipmentForm({
                     </div>
                     <InputError message={errors.warranty_expires_on} />
                 </div>
-            </div>
+                    </div>
+                </CardContent>
+            </Card>
 
-            {/* Notas - Ancho completo */}
-            <div className="space-y-2">
-                <Label htmlFor="notes">{es['Notes']}</Label>
-                <TipTapEditor
-                    content={data.notes}
-                    onChange={(content) => onChange('notes', content)}
-                    placeholder={es['Notes Placeholder']}
-                    className="w-full"
-                />
-                <InputError message={errors.notes} />
-            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>{es['Additional Information'] || 'Información Adicional'}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {/* Notas */}
+                    <div className="space-y-2">
+                        <Label htmlFor="notes">{es['Notes']}</Label>
+                        <TipTapEditor
+                            content={data.notes}
+                            onChange={(content) => onChange('notes', content)}
+                            placeholder={es['Notes Placeholder']}
+                            className="w-full"
+                        />
+                        <InputError message={errors.notes} />
+                    </div>
+                </CardContent>
+            </Card>
 
-            {/* Especificaciones Técnicas */}
-            <div className="mt-4">
-                <div 
-                    className="flex items-center gap-2 cursor-pointer mb-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" 
-                    onClick={() => setShowSpecifications(!showSpecifications)}
-                >
-                    {showSpecifications ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
-                    <Label className="cursor-pointer font-medium">{es['Technical Specifications']}</Label>
-                    <span className="text-xs text-muted-foreground ml-auto">({es['Optional']})</span>
-                </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle 
+                        className="flex items-center gap-2 cursor-pointer" 
+                        onClick={() => setShowSpecifications(!showSpecifications)}
+                    >
+                        {showSpecifications ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
+                        {es['Technical Specifications']}
+                        <span className="text-xs text-muted-foreground ml-auto">({es['Optional']})</span>
+                    </CardTitle>
+                </CardHeader>
                 {showSpecifications && (
-                    <div className="bg-white dark:bg-gray-900 rounded-lg border p-4 space-y-3">
+                    <CardContent className="space-y-4">
                         {Object.entries(data.specifications || {}).map(([key, value]) => (
                             <div key={key} className="grid grid-cols-2 gap-3">
                                 <Input
@@ -333,9 +344,9 @@ export default function EquipmentForm({
                             + {es['Add Specification'] || 'Agregar Especificación'}
                         </button>
                         <InputError message={errors.specifications} />
-                    </div>
+                    </CardContent>
                 )}
-            </div>
+            </Card>
         </form>
     );
 }
