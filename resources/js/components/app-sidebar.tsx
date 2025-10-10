@@ -21,7 +21,7 @@ export function AppSidebar() {
             icon: LayoutGrid,
         },
         {
-            title: es['Equipos'],
+            title: es['Equipment'],
             href: '/equipment',
             icon: Monitor,
         },

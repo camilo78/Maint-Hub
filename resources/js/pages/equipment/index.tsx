@@ -25,7 +25,7 @@ type Equipment = {
     model: string | null;
     serial_number: string | null;
     location: string;
-    status: 'activo' | 'inactivo' | 'en_reparacion';
+    status: 'buen_estado' | 'mal_estado' | 'mantenimiento';
     installation_date: string | null;
     warranty_expires_on: string | null;
     notes: string | null;

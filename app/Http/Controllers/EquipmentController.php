@@ -79,10 +79,8 @@ class EquipmentController extends Controller
                 'specifications' => 'nullable|array',
             ]);
 
-            // Generar asset_tag automáticamente si no se proporciona
-            if (empty($validated['asset_tag'])) {
-                $validated['asset_tag'] = Equipment::generateAssetTag($validated['client_id']);
-            }
+            // Generar asset_tag automáticamente
+            $validated['asset_tag'] = Equipment::generateAssetTag($validated['client_id']);
             
             Equipment::create($validated);
 
@@ -133,9 +131,9 @@ class EquipmentController extends Controller
                 'from_client' => 'nullable|string',
             ]);
 
-            // Generar asset_tag automáticamente si está vacío
+            // No regenerar asset_tag en edición, mantener el existente
             if (empty($validated['asset_tag'])) {
-                $validated['asset_tag'] = Equipment::generateAssetTag($validated['client_id']);
+                $validated['asset_tag'] = $equipment->asset_tag;
             }
             
             $equipment->update($validated);

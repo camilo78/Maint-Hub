@@ -36,11 +36,12 @@ export default function Create({ categories, descriptions, clients }: Props) {
         serial_number: '',
         asset_tag: '',
         location: '',
-        status: 'buen_estado' as 'buen_estado' | 'mal_estado' | 'en_reparacion',
+        status: 'buen_estado' as 'buen_estado' | 'mal_estado' | 'mantenimiento',
         installation_date: '',
         warranty_expires_on: '',
         notes: '',
-        specifications: {} as Record<string, any>,
+        specifications: {} as Record<string, string>,
+        from_client: '', // Added to fix the error
     });
 
     useEffect(() => {
@@ -55,12 +56,10 @@ export default function Create({ categories, descriptions, clients }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const formData = { ...data };
         if (fromClient) {
-            formData.from_client = '1';
+            setData('from_client' as keyof typeof data, '1');
         }
         post('/equipment', {
-            data: formData,
             onSuccess: () => {
                 toast.success(es['Equipment created successfully']);
             },

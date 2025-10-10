@@ -2,7 +2,7 @@ import React from 'react';
 
 interface QRLabelProps {
     equipment: {
-        asset_tag: string;
+        asset_tag?: string;
         brand: string;
         model: string;
         serial_number: string;
@@ -28,6 +28,7 @@ export default function QRLabelDesign({ equipment }: QRLabelProps) {
     };
 
     const printQRLabel = () => {
+        if (!equipment.asset_tag) return;
         const qrData = `Tag: ${equipment.asset_tag}\nMarca: ${equipment.brand}\nModelo: ${equipment.model}\nSerie: ${equipment.serial_number}\nCategoría: ${equipment.category}${equipment.description ? '\nDescripción: ' + equipment.description : ''}\nUbicación: ${equipment.location}\nEstado: ${getStatusName(equipment.status)}\nURL: ${window.location.origin}/equipment/${equipment.id}`;
         const printWindow = window.open('', '_blank');
         if (printWindow) {
@@ -79,11 +80,11 @@ export default function QRLabelDesign({ equipment }: QRLabelProps) {
                     <body>
                         <div class="tag">
                             <div class="qr-section">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Tag:%20${equipment.asset_tag}%0AMarca:%20${equipment.brand}%0AModelo:%20${equipment.model}%0ASerie:%20${equipment.serial_number}%0ACategor%C3%ADa:%20${equipment.category}${equipment.description ? '%0ADescripci%C3%B3n:%20' + encodeURIComponent(equipment.description) : ''}%0AUbicaci%C3%B3n:%20${equipment.location}%0AEstado:%20${getStatusName(equipment.status)}%0AURL:%20${window.location.origin}/equipment/${equipment.id}" style="width: 80px; height: 80px;" />
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Tag:%20${equipment.asset_tag || 'N/A'}%0AMarca:%20${equipment.brand}%0AModelo:%20${equipment.model}%0ASerie:%20${equipment.serial_number}%0ACategor%C3%ADa:%20${equipment.category}${equipment.description ? '%0ADescripci%C3%B3n:%20' + encodeURIComponent(equipment.description) : ''}%0AUbicaci%C3%B3n:%20${equipment.location}%0AEstado:%20${getStatusName(equipment.status)}%0AURL:%20${window.location.origin}/equipment/${equipment.id}" style="width: 80px; height: 80px;" />
                             </div>
                             <div class="info-section">
                                 <div class="text-info">
-                                    ${equipment.asset_tag} | ${equipment.brand} ${equipment.model}<br>
+                                    ${equipment.asset_tag || 'N/A'} | ${equipment.brand} ${equipment.model}<br>
                                     Serie: ${equipment.serial_number} | ${equipment.category}<br>
                                     ${equipment.location} | ${getStatusName(equipment.status)}
                                 </div>

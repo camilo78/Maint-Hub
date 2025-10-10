@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+
 import TipTapEditor from '@/components/tiptap-editor';
 
 import es from '@/lang/es';
@@ -28,11 +28,12 @@ interface Props {
         installation_date: string;
         warranty_expires_on: string;
         notes: string;
-        specifications: Record<string, any>;
+        specifications: Record<string, string>;
     };
     errors: {
         client_id?: string;
         category?: string;
+        description?: string;
         brand?: string;
         model?: string;
         serial_number?: string;
@@ -47,11 +48,15 @@ interface Props {
     clients: Client[];
     categories: string[];
     descriptions: string[];
-    onChange: (field: keyof Props['data'], value: string | Record<string, any>) => void;
+    onChange: (field: keyof Props['data'], value: string | Record<string, string>) => void;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     isEditing?: boolean;
 }
 
+/**
+ * Formulario para crear/editar equipos
+ * Maneja información básica, fechas, notas y especificaciones técnicas
+ */
 export default function EquipmentForm({
     data,
     errors,
@@ -62,9 +67,28 @@ export default function EquipmentForm({
     onSubmit,
     isEditing = false
 }: Props) {
-    const [showSpecifications, setShowSpecifications] = useState(false);
-    const [showClientWarning, setShowClientWarning] = useState(false);
 
+    const [showClientWarning] = useState(false);
+
+    // Generar asset_tag automáticamente cuando cambia el cliente
+    useEffect(() => {
+        if (!isEditing && data.client_id) {
+            const client = clients.find(c => c.id.toString() === data.client_id);
+            if (client) {
+                const name = client.name.replace(/[^a-zA-Z\s]/g, '');
+                const nameParts = name.trim().split(' ');
+                let initials = '';
+                nameParts.forEach(part => {
+                    if (part) initials += part[0].toUpperCase();
+                });
+                if (!initials) initials = 'EQ';
+                const timestamp = Date.now().toString().slice(-4);
+                onChange('asset_tag', `${initials}${timestamp}`);
+            }
+        }
+    }, [data.client_id, isEditing]);
+
+    // Maneja cambios en especificaciones técnicas
     const handleSpecificationChange = (key: string, value: string) => {
         const updatedSpecs = { ...data.specifications };
         if (value.trim() === '') {
@@ -75,6 +99,7 @@ export default function EquipmentForm({
         onChange('specifications', updatedSpecs);
     };
 
+    // Agrega nueva especificación con clave temporal
     const addSpecification = () => {
         const newKey = `spec_${Date.now()}`;
         onChange('specifications', { ...data.specifications, [newKey]: '' });
@@ -93,7 +118,7 @@ export default function EquipmentForm({
                             <Label htmlFor="client_id">{es['Client']} *</Label>
                             <Select value={data.client_id} onValueChange={(value) => onChange('client_id', value)}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={es['Select Client']} />
+                                    <SelectValue placeholder={es['Select client']} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {clients.map(client => (
@@ -105,7 +130,7 @@ export default function EquipmentForm({
                             </Select>
                             {isEditing && showClientWarning && (
                                 <div className="text-xs text-muted-foreground bg-muted/50 border border-muted rounded p-2">
-                                    ⚠️ {es['Client Change Warning'] || 'Cambiar el cliente moverá este equipo a otro cliente'}
+                                    ⚠️ {es['Client Change Warning']}
                                 </div>
                             )}
                             <InputError message={errors.client_id} />
@@ -120,7 +145,7 @@ export default function EquipmentForm({
                         list="categories"
                         value={data.category}
                         onChange={(e) => onChange('category', e.target.value)}
-                        placeholder={es['Select Category'] || 'Escribir o seleccionar categoría...'}
+                        placeholder={es['Category Placeholder'] || 'Escribir o seleccionar categoría...'}
                         className="w-full"
                         required
                     />
@@ -212,14 +237,15 @@ export default function EquipmentForm({
 
                 {/* Etiqueta */}
                 <div className="space-y-2">
-                    <Label htmlFor="asset_tag">{es['Tag']}</Label>
+                    <Label htmlFor="asset_tag">{es['Asset Tag']} *</Label>
                     <Input
                         id="asset_tag"
                         value={data.asset_tag}
-                        onChange={(e) => onChange('asset_tag', e.target.value)}
-                        placeholder={es['Tag Placeholder'] || 'Ej: EQ-001, LAP-123'}
-                        className="w-full"
+                        disabled
+                        placeholder={es['Auto-generated']}
+                        className="w-full bg-muted"
                     />
+                    <p className="text-xs text-muted-foreground">{es['Auto-generated based on client']}</p>
                     <InputError message={errors.asset_tag} />
                 </div>
 
@@ -270,6 +296,7 @@ export default function EquipmentForm({
                 </CardContent>
             </Card>
 
+            {/* Información adicional del equipo */}
             <Card>
                 <CardHeader>
                     <CardTitle>{es['Additional Information'] || 'Información Adicional'}</CardTitle>
@@ -289,31 +316,30 @@ export default function EquipmentForm({
                 </CardContent>
             </Card>
 
+            {/* Especificaciones técnicas opcionales */}
             <Card>
                 <CardHeader>
-                    <CardTitle 
-                        className="flex items-center gap-2 cursor-pointer" 
-                        onClick={() => setShowSpecifications(!showSpecifications)}
-                    >
-                        {showSpecifications ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
+                    <CardTitle className="flex items-center gap-2">
                         {es['Technical Specifications']}
                         <span className="text-xs text-muted-foreground ml-auto">({es['Optional']})</span>
                     </CardTitle>
                 </CardHeader>
-                {showSpecifications && (
-                    <CardContent className="space-y-4">
-                        {Object.entries(data.specifications || {}).map(([key, value]) => (
+                <CardContent className="space-y-4">
+                        {Object.entries(data.specifications || {}).map(([key, value]) => {
+                            const displayKey = key.startsWith('spec_') ? '' : key;
+                            return (
                             <div key={key} className="grid grid-cols-2 gap-3">
                                 <Input
                                     placeholder={es['Specification Name Placeholder'] || 'Nombre (ej: BTU, Capacidad)'}
-                                    value={key.startsWith('spec_') ? '' : key}
-                                    onChange={(e) => {
-                                        const newSpecs = { ...data.specifications };
-                                        delete newSpecs[key];
-                                        if (e.target.value.trim()) {
-                                            newSpecs[e.target.value] = value;
+                                    defaultValue={displayKey}
+                                    onBlur={(e) => {
+                                        const newKey = e.target.value.trim();
+                                        if (newKey && newKey !== key) {
+                                            const newSpecs = { ...data.specifications };
+                                            delete newSpecs[key];
+                                            newSpecs[newKey] = value;
+                                            onChange('specifications', newSpecs);
                                         }
-                                        onChange('specifications', newSpecs);
                                     }}
                                 />
                                 <div className="flex gap-2">
@@ -335,7 +361,8 @@ export default function EquipmentForm({
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                         <button
                             type="button"
                             onClick={addSpecification}
@@ -344,8 +371,7 @@ export default function EquipmentForm({
                             + {es['Add Specification'] || 'Agregar Especificación'}
                         </button>
                         <InputError message={errors.specifications} />
-                    </CardContent>
-                )}
+                </CardContent>
             </Card>
         </form>
     );

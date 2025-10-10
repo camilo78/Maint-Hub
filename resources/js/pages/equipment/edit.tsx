@@ -18,15 +18,16 @@ type Equipment = {
     client_id: number;
     asset_tag: string | null;
     category: string;
+    description: string | null;
     brand: string | null;
     model: string | null;
     serial_number: string | null;
     location: string;
-    status: 'buen_estado' | 'mal_estado' | 'en_reparacion';
+    status: 'buen_estado' | 'mal_estado' | 'mantenimiento';
     installation_date: string | null;
     warranty_expires_on: string | null;
     notes: string | null;
-    specifications: Record<string, any> | null;
+    specifications: Record<string, string> | null;
     client: Client;
     created_at: Date;
 };
@@ -57,20 +58,18 @@ export default function Edit({ equipment, categories, descriptions, clients }: P
         asset_tag: equipment.asset_tag || '',
         location: equipment.location,
         status: equipment.status,
-        installation_date: equipment.installation_date || '',
-        warranty_expires_on: equipment.warranty_expires_on || '',
+        installation_date: equipment.installation_date ? equipment.installation_date.split('T')[0] : '',
+        warranty_expires_on: equipment.warranty_expires_on ? equipment.warranty_expires_on.split('T')[0] : '',
         notes: equipment.notes || '',
-        specifications: equipment.specifications || {} as Record<string, any>,
+        specifications: equipment.specifications || {} as Record<string, string>,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const formData = { ...data };
         if (fromClient) {
-            formData.from_client = '1';
+            setData('from_client' as keyof typeof data, '1');
         }
         put(`/equipment/${equipment.id}`, {
-            data: formData,
             onSuccess: () => {
                 toast.success(es['Equipment updated successfully']);
             },

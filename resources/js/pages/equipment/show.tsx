@@ -4,11 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import QRLabelDesign from '@/components/qr-label-design';
-import SimpleQR from '@/components/simple-qr';
 import { type BreadcrumbItem } from '@/types';
-import { ArrowLeft, Edit, Monitor, User, MapPin, Calendar, Shield, FileText, Settings, Printer } from 'lucide-react';
+import { ArrowLeft, Edit, Monitor, User, Calendar, Shield, FileText, Settings } from 'lucide-react';
 import es from '@/lang/es';
-import React from 'react';
+
 
 type Client = {
     id: number;
@@ -29,10 +28,12 @@ type Equipment = {
     installation_date: string;
     warranty_expires_on: string;
     notes: string;
-    specifications: any;
+    specifications: Record<string, unknown>;
     created_at: string;
     updated_at: string;
     client: Client;
+    description?: string;
+    asset_tag?: string;
 };
 
 type Props = {
@@ -55,83 +56,6 @@ export default function Show({ equipment }: Props) {
         { title: `${equipment.brand} ${equipment.model}`, href: `/admin/equipment/${equipment.id}` },
     ];
 
-    const printLabel = () => {
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Etiqueta - ${equipment.asset_tag}</title>
-                        <style>
-                            @page { size: 4cm 2.5cm; margin: 0; }
-                            @media print { body { margin: 0; } }
-                            body { 
-                                font-family: Arial, sans-serif; 
-                                margin: 0; 
-                                padding: 0; 
-                                width: 4cm; 
-                                height: 2.5cm; 
-                                overflow: hidden;
-                            }
-                            .tag { 
-                                border: 2px solid #000; 
-                                width: 4cm; 
-                                height: 2.5cm; 
-                                padding: 1mm; 
-                                box-sizing: border-box;
-                                display: flex; 
-                                flex-direction: column;
-                                background: white;
-                            }
-                            .header { 
-                                text-align: center; 
-                                font-size: 10px; 
-                                font-weight: bold; 
-                                margin-bottom: 1mm;
-                                border-bottom: 1px solid #ccc;
-                                padding-bottom: 1mm;
-                            }
-                            .barcode-container { 
-                                flex: 1; 
-                                display: flex; 
-                                align-items: center; 
-                                justify-content: center;
-                                transform: rotate(90deg);
-                            }
-                            .footer { 
-                                font-size: 6px; 
-                                text-align: center; 
-                                line-height: 1.2;
-                                border-top: 1px solid #ccc;
-                                padding-top: 1mm;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="tag">
-                            <div class="header">${equipment.asset_tag}</div>
-                            <div class="barcode-container">
-                                <svg id="barcode"></svg>
-                            </div>
-                            <div class="footer">${equipment.brand}<br>${equipment.model}</div>
-                        </div>
-                        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-                        <script>
-                            JsBarcode("#barcode", "${equipment.asset_tag}", {
-                                format: "CODE128",
-                                width: 1,
-                                height: 25,
-                                displayValue: false,
-                                margin: 0
-                            });
-                            setTimeout(() => window.print(), 500);
-                        </script>
-                    </body>
-                </html>
-            `);
-            printWindow.document.close();
-        }
-    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
