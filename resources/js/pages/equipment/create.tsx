@@ -50,6 +50,7 @@ export default function Create({ categories, descriptions, clients }: Props) {
         if (clientId) {
             setData('client_id', clientId);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fromClient = new URLSearchParams(window.location.search).get('from_client');

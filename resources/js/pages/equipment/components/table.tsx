@@ -23,7 +23,7 @@ type Equipment = {
     installation_date: string | null;
     warranty_expires_on: string | null;
     notes: string | null;
-    specifications: Record<string, any> | null;
+    specifications: Record<string, string | number | boolean> | null;
     client: Client;
     created_at: Date;
 };
@@ -49,11 +49,11 @@ export default function EquipmentTable({ equipment, onEdit, onDelete }: Props) {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'buen_estado':
-                return <Badge variant="default" className="bg-green-500">{es['Good Condition']}</Badge>;
+                return <Badge variant="default" className="bg-green-0 text-white border-green-600">{es['Good Condition']}</Badge>;
             case 'mal_estado':
-                return <Badge variant="secondary" className="bg-red-500">{es['Bad Condition']}</Badge>;
+                return <Badge variant="secondary" className="bg-red-0 text-white border-red-600">{es['Bad Condition']}</Badge>;
             case 'mantenimiento':
-                return <Badge variant="default" className="bg-orange-500 text-white border-orange-500">Mantenimiento</Badge>;
+                return <Badge variant="default" className="bg-yellow-0 text-white border-yellow-600">Mantenimiento</Badge>;
             default:
                 return <Badge variant="secondary">{status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}</Badge>;
         }

@@ -86,6 +86,7 @@ export default function EquipmentForm({
                 onChange('asset_tag', `${initials}${timestamp}`);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data.client_id, isEditing]);
 
     // Maneja cambios en especificaciones técnicas

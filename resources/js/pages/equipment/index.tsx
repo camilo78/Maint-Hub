@@ -29,7 +29,7 @@ type Equipment = {
     installation_date: string | null;
     warranty_expires_on: string | null;
     notes: string | null;
-    specifications: Record<string, string | number> | null;
+    specifications: Record<string, string | number | boolean> | null;
     client: Client;
     created_at: Date;
 };

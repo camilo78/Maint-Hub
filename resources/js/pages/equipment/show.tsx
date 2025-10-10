@@ -60,11 +60,11 @@ export default function Show({ equipment }: Props) {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'buen_estado':
-                return 'bg-green-500 text-gray-800 border-green-500';
+                return 'bg-green-600 dark:text-white border-green-600';
             case 'mal_estado':
-                return 'bg-red-500 border-red-500';
+                return 'bg-red-600 dark:text-white border-red-600';
             case 'mantenimiento':
-                return 'bg-orange-500 text-white border-orange-500';
+                return 'bg-yellow-600 dark:text-white border-yellow-600';
         }
     };
 

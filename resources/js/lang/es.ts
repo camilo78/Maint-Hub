@@ -178,6 +178,14 @@ const es = {
     'Delete Equipment': 'Eliminar Equipo',
     'Are you sure you want to delete this equipment': '¿Está seguro de que desea eliminar este equipo',
     'Yes, Delete': 'Sí, Eliminar',
+    'A list of all equipment.': 'Una lista de todos los equipos.',
+    'Search equipment...': 'Buscar equipo...',
+    'All Categories': 'Todas las Categorías',
+    'All Status': 'Todos los Estados',
+    'Edit Equipment': 'Editar Equipo',
+    'Equipment updated successfully': 'Equipo actualizado exitosamente',
+    'Failed to update equipment': 'Error al actualizar el equipo',
+    'Save Changes': 'Guardar Cambios',
 };
 
 export default es;
