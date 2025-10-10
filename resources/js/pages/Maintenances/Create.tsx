@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import MaintenanceForm from '@/components/MaintenanceForm';
+import MaintenanceForm from './components/MaintenanceForm';
 import { Button } from '@/components/ui/button';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import { type BreadcrumbItem } from '@/types';

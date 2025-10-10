@@ -6,6 +6,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\SparePartController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -16,6 +17,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Maintenance routes
     Route::resource('maintenances', MaintenanceController::class);
+    
+    // Spare Parts routes
+    Route::post('spare-parts', [SparePartController::class, 'store'])->name('spare-parts.store');
+    Route::put('spare-parts/{sparePart}', [SparePartController::class, 'update'])->name('spare-parts.update');
 });
 
 

@@ -326,5 +326,22 @@
     "Tag Placeholder": "e.g. EQ-001, LAP-123",
     "Print Label": "Print Label",
     "All": "All",
-    "Paginate": "Paginate"
+    "Paginate": "Paginate",
+    "Stock Keeping Unit": "Stock Keeping Unit",
+    "Stock": "Stock",
+    "Description": "Description",
+    "Part Number": "Part Number",
+    "Minimum Stock": "Minimum Stock",
+    "Unit Measure": "Unit Measure",
+    "Unit": "Unit",
+    "Piece": "Piece",
+    "Meter": "Meter",
+    "Kilogram": "Kilogram",
+    "Liter": "Liter",
+    "Box": "Box",
+    "Sale Price": "Sale Price",
+    "Cost Price": "Cost Price"
+
+   
+
 }

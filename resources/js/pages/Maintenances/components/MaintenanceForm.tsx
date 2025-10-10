@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, Plus, Edit } from 'lucide-react';
+import SparePartModal from './SparePartModal';
 import es from '@/lang/es';
 
 interface Client {
@@ -85,6 +86,9 @@ export default function MaintenanceForm({
         observations: string;
         sale_price: number;
     }>>([]);
+    const [isSparePartModalOpen, setIsSparePartModalOpen] = useState(false);
+    const [editingSparePart, setEditingSparePart] = useState<SparePart | undefined>();
+    const [availableSpareParts, setAvailableSpareParts] = useState<SparePart[]>(spareParts);
 
     const { data, setData, post, put, processing, errors } = useForm({
         description: maintenance?.description || '',
@@ -111,6 +115,27 @@ export default function MaintenanceForm({
             setSelectedSpareParts(initialSpareParts);
         }
     }, [maintenance, spareParts]);
+
+    const handleSparePartSuccess = (newSparePart: SparePart) => {
+        setAvailableSpareParts(prev => {
+            const existing = prev.find(sp => sp.id === newSparePart.id);
+            if (existing) {
+                return prev.map(sp => sp.id === newSparePart.id ? newSparePart : sp);
+            } else {
+                return [...prev, newSparePart];
+            }
+        });
+    };
+
+    const openSparePartModal = (sparePart?: SparePart) => {
+        setEditingSparePart(sparePart);
+        setIsSparePartModalOpen(true);
+    };
+
+    const closeSparePartModal = () => {
+        setEditingSparePart(undefined);
+        setIsSparePartModalOpen(false);
+    };
 
     useEffect(() => {
         if (data.client_id) {
@@ -147,7 +172,7 @@ export default function MaintenanceForm({
     };
 
     const addSparePart = (sparePartId: number) => {
-        const sparePart = spareParts.find(sp => sp.id === sparePartId);
+        const sparePart = availableSpareParts.find(sp => sp.id === sparePartId);
         if (sparePart && !selectedSpareParts.find(sp => sp.id === sparePartId)) {
             setSelectedSpareParts([...selectedSpareParts, {
                 id: sparePart.id,
@@ -319,38 +344,51 @@ export default function MaintenanceForm({
                     <CardTitle>{es['Spare Parts']}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div>
-                        <Label>{es['Add Spare Part']}</Label>
-                        <Select onValueChange={(value) => {
-                            addSparePart(parseInt(value));
-                            setSparePartSearch('');
-                        }}>
-                            <SelectTrigger>
-                                <SelectValue placeholder={es['Select spare part']} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <div className="p-2 border-b">
-                                    <Input
-                                        placeholder={es['Search spare part...']}
-                                        value={sparePartSearch}
-                                        onChange={(e) => setSparePartSearch(e.target.value)}
-                                        className="h-8"
-                                    />
-                                </div>
-                                {spareParts
-                                    .filter(sp => 
-                                        !selectedSpareParts.find(ssp => ssp.id === sp.id) &&
-                                        (sparePartSearch === '' ||
-                                         sp.name.toLowerCase().includes(sparePartSearch.toLowerCase()) ||
-                                         sp.sku.toLowerCase().includes(sparePartSearch.toLowerCase()))
-                                    )
-                                    .map(sparePart => (
-                                        <SelectItem key={sparePart.id} value={sparePart.id.toString()}>
-                                            {sparePart.name} - {sparePart.sku} (Stock: {sparePart.stock})
-                                        </SelectItem>
-                                    ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="flex gap-2">
+                        <div className="flex-1">
+                            <Label>{es['Add Spare Part']}</Label>
+                            <Select onValueChange={(value) => {
+                                addSparePart(parseInt(value));
+                                setSparePartSearch('');
+                            }}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder={es['Select spare part']} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <div className="p-2 border-b">
+                                        <Input
+                                            placeholder={es['Search spare part...']}
+                                            value={sparePartSearch}
+                                            onChange={(e) => setSparePartSearch(e.target.value)}
+                                            className="h-8"
+                                        />
+                                    </div>
+                                    {availableSpareParts
+                                        .filter(sp => 
+                                            !selectedSpareParts.find(ssp => ssp.id === sp.id) &&
+                                            (sparePartSearch === '' ||
+                                             sp.name.toLowerCase().includes(sparePartSearch.toLowerCase()) ||
+                                             sp.sku.toLowerCase().includes(sparePartSearch.toLowerCase()))
+                                        )
+                                        .map(sparePart => (
+                                            <SelectItem key={sparePart.id} value={sparePart.id.toString()}>
+                                                {sparePart.name} - {sparePart.sku} (Stock: {sparePart.stock})
+                                            </SelectItem>
+                                        ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="pt-6">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openSparePartModal()}
+                            >
+                                <Plus className="h-4 w-4 mr-1" />
+                                {es['New Spare Part']}
+                            </Button>
+                        </div>
                     </div>
 
                     {selectedSpareParts.length > 0 && (
@@ -367,9 +405,26 @@ export default function MaintenanceForm({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {selectedSpareParts.map(sparePart => (
+                                    {selectedSpareParts.map(sparePart => {
+                                        const sparePartData = availableSpareParts.find(sp => sp.id === sparePart.id);
+                                        return (
                                         <tr key={sparePart.id} className="border-b">
-                                            <td className="p-2 font-medium">{sparePart.name}</td>
+                                            <td className="p-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-medium">{sparePart.name}</span>
+                                                    {sparePartData && (
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() => openSparePartModal(sparePartData)}
+                                                            className="h-6 w-6 p-0"
+                                                        >
+                                                            <Edit className="h-3 w-3" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </td>
                                             <td className="p-2">
                                                 <Input
                                                     type="number"
@@ -399,7 +454,8 @@ export default function MaintenanceForm({
                                                 </Button>
                                             </td>
                                         </tr>
-                                    ))}
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -438,7 +494,12 @@ export default function MaintenanceForm({
                 </CardContent>
             </Card>
 
-
+            <SparePartModal
+                isOpen={isSparePartModalOpen}
+                onClose={closeSparePartModal}
+                sparePart={editingSparePart}
+                onSuccess={handleSparePartSuccess}
+            />
         </form>
     );
 }

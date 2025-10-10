@@ -21,12 +21,12 @@ export function AppSidebar() {
             icon: LayoutGrid,
         },
         {
-            title: 'Equipos',
+            title: es['Equipos'],
             href: '/equipment',
             icon: Monitor,
         },
         {
-            title: 'Maintenances',
+            title: es['Maintenances'],
             href: '/maintenances',
             icon: Settings,
         },

@@ -392,5 +392,17 @@
     "Saving...": "Guardando...",
     "Update Maintenance": "Actualizar Mantenimiento",
     "Are you sure you want to delete this maintenance?": "¿Está seguro de eliminar este mantenimiento?",
-    "Stock": "Stock"
+    "Stock Keeping Unit": "Código de Inventario",
+    "Part Number": "Número de Parte",
+    "Stock": "Inventario",
+    "Minimum Stock": "Stock Mínimo",
+    "Unit Measure": "Unidad de Medida",
+    "Unit": "Unidad",
+    "Piece": "Pieza",
+    "Meter": "Metro",
+    "Kilogram": "Kilogramo",
+    "Liter": "Litro",
+    "Box": "Caja",
+    "Sale Price": "Precio de Venta",
+    "Cost Price": "Precio de Costo"
 }
