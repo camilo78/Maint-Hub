@@ -36,6 +36,7 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $tipo = $request->input('tipo');
         
         $query = User::query()->with(['roles','permissions'])
             ->whereHas('roles', function ($q) {
@@ -51,11 +52,16 @@ class ClientController extends Controller
             });
         }
 
+        if ($tipo) {
+            $query->where('tipo', $tipo);
+        }
+
         $users = $query->paginate(10)->withQueryString();
 
         return Inertia::render('clients/index', [
             'users' => $users,
-            'search' => $search
+            'search' => $search,
+            'tipo' => $tipo
         ]);
     }
     

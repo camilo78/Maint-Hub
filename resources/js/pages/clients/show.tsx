@@ -1,14 +1,14 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import BulkQRGenerator from '@/components/bulk-qr-generator';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-import AppLayout from '@/layouts/app-layout';
-import BulkQRGenerator from '@/components/bulk-qr-generator';
-import { type BreadcrumbItem } from '@/types';
-import { ArrowLeft, Edit, Mail, Phone, MapPin, FileText, Calendar, Shield, Monitor, Search, Eye } from 'lucide-react';
 import es from '@/lang/es';
-import { useState, useEffect, useCallback } from 'react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
+import { ArrowLeft, Calendar, Edit, Eye, FileText, Mail, MapPin, Monitor, Phone, Search, Shield } from 'lucide-react';
+import { useState } from 'react';
 
 type Role = {
     id: number;
@@ -37,11 +37,12 @@ type Equipment = {
     model: string;
     serial_number: string;
     category: string;
+    description?: string;
     location: string;
     status: string;
     installation_date: string;
     warranty_expires_on: string;
-    specifications: any;
+    specifications: Record<string, string | number | boolean> | null;
     notes: string;
     created_at: string;
 };
@@ -54,7 +55,7 @@ type Props = {
         last_page: number;
         per_page: number;
         total: number;
-        links: any[];
+        links: { url: string | null; label: string; active: boolean }[];
     };
     equipment_search: string;
     show_all: boolean;
@@ -67,7 +68,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        const params: any = {};
+        const params: Record<string, string> = {};
         if (search.trim()) {
             params.equipment_search = search.trim();
         }
@@ -87,20 +88,20 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
             case 'corporativo':
                 return {
                     label: 'Corporativo',
-                    color: 'bg-blue-100 text-blue-800 border-blue-300',
-                    docType: 'RTN'
+                    color: 'border dark:text-white border-blue-600',
+                    docType: 'RTN',
                 };
             case 'extranjero':
                 return {
                     label: 'Extranjero',
-                    color: 'bg-purple-100 text-purple-800 border-purple-300',
-                    docType: 'Pasaporte'
+                    color: 'border dark:text-white border-purple-600',
+                    docType: 'Pasaporte',
                 };
             default:
                 return {
                     label: 'Particular',
-                    color: 'bg-green-100 text-green-800 border-green-300',
-                    docType: 'DNI'
+                    color: 'border dark:text-white border-green-600',
+                    docType: 'DNI',
                 };
         }
     };
@@ -108,26 +109,26 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
     const typeInfo = getTypeInfo(user.tipo);
 
     const getStatusInfo = (status: string) => {
-        switch(status) {
+        switch (status) {
             case 'buen_estado':
                 return {
                     label: 'Buen Estado',
-                    className: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                    className: 'border-green-500  dark:text-white dark:border-green-500',
                 };
             case 'mal_estado':
                 return {
                     label: 'Mal Estado',
-                    className: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+                    className: 'border-red-500  dark:text-white dark:border-red-500',
                 };
             case 'mantenimiento':
                 return {
                     label: 'Mantenimiento',
-                    className: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
+                    className: 'border-yellow-400  dark:text-white dark:border-yellow-400',
                 };
             default:
                 return {
                     label: status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' '),
-                    className: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800'
+                    className: 'text-gray-400 border-gray-400  dark:text-white-400 dark:border-gray-400',
                 };
         }
     };
@@ -145,27 +146,26 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                         {/* Header */}
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                    {user.name}
-                                </h1>
-                                <p className="text-sm text-muted-foreground">
-                                    {es['Client since']} {new Date(user.created_at).toLocaleDateString(es['locale'], {
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{user.name}</h1>
+                                <p className="text-muted-foreground text-sm">
+                                    {es['Client since']}{' '}
+                                    {new Date(user.created_at).toLocaleDateString(es['locale'], {
                                         year: 'numeric',
                                         month: 'long',
-                                        day: 'numeric'
+                                        day: 'numeric',
                                     })}
                                 </p>
                             </div>
                             <div className="flex gap-2">
                                 <Button variant="outline" className="hover:bg-gray-100 dark:hover:bg-gray-800" asChild>
                                     <Link href="/admin/clients">
-                                        <ArrowLeft className="h-4 w-4 mr-2" />
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
                                         {es['Back']}
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="hover:bg-gray-100 dark:hover:bg-gray-800"asChild>
+                                <Button variant="outline" className="hover:bg-gray-100 dark:hover:bg-gray-800" asChild>
                                     <Link href={`/admin/clients/${user.id}/edit`}>
-                                        <Edit className="h-4 w-4 mr-2" />
+                                        <Edit className="mr-2 h-4 w-4" />
                                         {es['Edit']}
                                     </Link>
                                 </Button>
@@ -173,28 +173,22 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                         </div>
 
                         {/* Main Content */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             {/* Left Column - Basic Info */}
-                            <div className="lg:col-span-2 space-y-6">
+                            <div className="space-y-6 lg:col-span-2">
                                 {/* Personal Information */}
-                                <div className="bg-white dark:bg-gray-800 rounded-lg border p-4 shadow-sm">
-                                    <h2 className="text-lg font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <div className="rounded-lg border bg-white p-4 shadow-sm dark:bg-gray-800">
+                                    <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         <FileText className="h-5 w-5" />
                                         {es['Personal Information']}
                                     </h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         <div className="space-y-1">
-                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                {es['Full Name']}
-                                            </label>
-                                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                                                {user.name}
-                                            </p>
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{es['Full Name']}</label>
+                                            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                {es['Client Type']}
-                                            </label>
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{es['Client Type']}</label>
                                             <div className="mt-1">
                                                 <Badge variant="outline" className={typeInfo.color}>
                                                     {typeInfo.label}
@@ -202,41 +196,32 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                {typeInfo.docType}
-                                            </label>
-                                            <p className="text-sm font-mono font-bold text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded border mt-1">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{typeInfo.docType}</label>
+                                            <p className="mt-1 rounded border bg-gray-50 px-3 py-2 font-mono text-sm font-bold text-gray-900 dark:bg-gray-700 dark:text-gray-100">
                                                 {user.rtn_dni_passport}
                                             </p>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                {es['Email Status']}
-                                            </label>
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{es['Email Status']}</label>
                                             <div className="mt-1">
-                                                <Badge variant={user.email_verified_at ? "default" : "secondary"}>
                                                     {user.email_verified_at ? es['Verified'] : es['Unverified']}
-                                                </Badge>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
 
                                 {/* Contact Information */}
-                                <div className="bg-white dark:bg-gray-800 rounded-lg border p-4 shadow-sm">
-                                    <h2 className="text-lg font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <div className="rounded-lg border bg-white p-4 shadow-sm dark:bg-gray-800">
+                                    <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         <Phone className="h-5 w-5" />
                                         {es['Contact Information']}
                                     </h2>
                                     <div className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <div className="flex items-center gap-4 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                                                 <Phone className="h-6 w-6 text-blue-600" />
                                                 <div className="flex-1">
-                                                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                        {es['Phone']}
-                                                    </label>
+                                                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{es['Phone']}</label>
                                                     <p className="text-base font-medium">
                                                         <a href={`tel:${user.phone}`} className="text-blue-600 hover:text-blue-800 hover:underline">
                                                             {user.phone}
@@ -244,15 +229,16 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                            <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
                                                 <Mail className="h-6 w-6 text-green-600" />
                                                 <div className="flex-1">
-                                                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                        Email
-                                                    </label>
+                                                    <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Email</label>
                                                     <p className="text-base font-medium">
                                                         {user.email ? (
-                                                            <a href={`mailto:${user.email}`} className="text-green-600 hover:text-green-800 hover:underline">
+                                                            <a
+                                                                href={`mailto:${user.email}`}
+                                                                className="text-green-600 hover:text-green-800 hover:underline"
+                                                            >
                                                                 {user.email}
                                                             </a>
                                                         ) : (
@@ -262,13 +248,11 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                                            <MapPin className="h-5 w-5 text-yellow-600 mt-1" />
+                                        <div className="flex items-start gap-3 rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
+                                            <MapPin className="mt-1 h-5 w-5 text-yellow-600" />
                                             <div className="flex-1">
-                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                    {es['Direction']}
-                                                </label>
-                                                <p className="text-sm text-gray-900 dark:text-gray-100 mt-1 leading-relaxed">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{es['Direction']}</label>
+                                                <p className="mt-1 text-sm leading-relaxed text-gray-900 dark:text-gray-100">
                                                     {user.address || <span className="text-gray-500 italic">{es['No address registered']}</span>}
                                                 </p>
                                             </div>
@@ -277,23 +261,21 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                 </div>
 
                                 {/* Equipment */}
-                                <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
-                                    <div className="space-y-4 mb-4">
-                                        <h2 className="text-lg font-semibold flex items-center gap-2">
+                                <div className="rounded-lg border bg-white p-4 dark:bg-gray-800">
+                                    <div className="mb-4 space-y-4">
+                                        <h2 className="flex items-center gap-2 text-lg font-semibold">
                                             <Monitor className="h-5 w-5" />
                                             {es['Assigned Equipment']} ({equipment.total})
                                         </h2>
-                                        
+
                                         {/* Fila de Botones */}
-                                        <div className="flex flex-wrap gap-2 justify-between items-center">
-                                            <div className="flex gap-2 flex-wrap">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <div className="flex flex-wrap gap-2">
+                                                {equipment.data.length > 0 && <BulkQRGenerator equipment={equipment.data} />}
                                                 {equipment.data.length > 0 && (
-                                                    <BulkQRGenerator equipment={equipment.data} />
-                                                )}
-                                                {equipment.data.length > 0 && (
-                                                    <Button 
-                                                        size="sm" 
-                                                        className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                                                    <Button
+                                                        size="sm"
+                                                        className="flex items-center gap-2 bg-green-600 text-white hover:bg-green-700"
                                                         disabled={isExporting}
                                                         onClick={async () => {
                                                             setIsExporting(true);
@@ -305,28 +287,44 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                                 link.click();
                                                                 document.body.removeChild(link);
                                                                 setTimeout(() => setIsExporting(false), 2000);
-                                                            } catch (error) {
+                                                            } catch {
                                                                 setIsExporting(false);
                                                             }
                                                         }}
                                                     >
                                                         {isExporting ? (
-                                                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                                <circle
+                                                                    className="opacity-25"
+                                                                    cx="12"
+                                                                    cy="12"
+                                                                    r="10"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="4"
+                                                                ></circle>
+                                                                <path
+                                                                    className="opacity-75"
+                                                                    fill="currentColor"
+                                                                    d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                                ></path>
                                                             </svg>
                                                         ) : (
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                                />
                                                             </svg>
                                                         )}
                                                         {isExporting ? 'Generando...' : 'Excel'}
                                                     </Button>
                                                 )}
                                                 {equipment.data.length > 0 && (
-                                                    <Button 
-                                                        size="sm" 
-                                                        className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+                                                    <Button
+                                                        size="sm"
+                                                        className="flex items-center gap-2 bg-red-600 text-white hover:bg-red-700"
                                                         disabled={isExportingPdf}
                                                         onClick={async () => {
                                                             setIsExportingPdf(true);
@@ -338,38 +336,64 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                                 link.click();
                                                                 document.body.removeChild(link);
                                                                 setTimeout(() => setIsExportingPdf(false), 2000);
-                                                            } catch (error) {
+                                                            } catch {
                                                                 setIsExportingPdf(false);
                                                             }
                                                         }}
                                                     >
                                                         {isExportingPdf ? (
-                                                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                                <circle
+                                                                    className="opacity-25"
+                                                                    cx="12"
+                                                                    cy="12"
+                                                                    r="10"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="4"
+                                                                ></circle>
+                                                                <path
+                                                                    className="opacity-75"
+                                                                    fill="currentColor"
+                                                                    d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                                ></path>
                                                             </svg>
                                                         ) : (
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                                />
                                                             </svg>
                                                         )}
                                                         {isExportingPdf ? 'Generando...' : 'PDF'}
                                                     </Button>
                                                 )}
                                                 {show_all ? (
-                                                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white" asChild>
+                                                    <Button size="sm" className="bg-orange-600 text-white hover:bg-orange-700" asChild>
                                                         <Link href={`/admin/clients/${user.id}`} className="flex items-center gap-2">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                                />
                                                             </svg>
                                                             {es['Paginated']}
                                                         </Link>
                                                     </Button>
                                                 ) : (
-                                                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white" asChild>
+                                                    <Button size="sm" className="bg-orange-600 text-white hover:bg-orange-700" asChild>
                                                         <Link href={`/admin/clients/${user.id}?show_all=1`} className="flex items-center gap-2">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                                                                />
                                                             </svg>
                                                             {es['All']}
                                                         </Link>
@@ -377,15 +401,13 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                 )}
                                             </div>
                                             <Button size="sm" asChild>
-                                                <Link href={`/equipment/create?client_id=${user.id}`}>
-                                                    + {es['Add Equipment']}
-                                                </Link>
+                                                <Link href={`/equipment/create?client_id=${user.id}`}>+ {es['Add Equipment']}</Link>
                                             </Button>
                                         </div>
-                                        
+
                                         {/* Fila de Búsquedas */}
                                         <div className="border-t pt-4">
-                                            <form onSubmit={handleSearch} className="flex gap-2 max-w-md">
+                                            <form onSubmit={handleSearch} className="flex max-w-md gap-2">
                                                 <Input
                                                     type="text"
                                                     placeholder={es['Search by description, tag, category, status...']}
@@ -397,14 +419,14 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                     <Search className="h-4 w-4" />
                                                 </Button>
                                                 {search && (
-                                                    <Button 
-                                                        type="button" 
-                                                        size="sm" 
-                                                        variant="ghost" 
-                                                        className="hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100 px-3"
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="px-3 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                                                         onClick={() => {
                                                             setSearch('');
-                                                            const params: any = {};
+                                                            const params: Record<string, string> = {};
                                                             if (show_all) {
                                                                 params.show_all = '1';
                                                             }
@@ -412,34 +434,43 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                         }}
                                                     >
                                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M6 18L18 6M6 6l12 12"
+                                                            />
                                                         </svg>
                                                     </Button>
                                                 )}
                                             </form>
                                         </div>
                                     </div>
-                                    
+
                                     {equipment.data.length > 0 ? (
                                         <>
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-xs">
                                                     <thead>
                                                         <tr className="border-b">
-                                                            <th className="text-left p-2">{es['Tag']}</th>
-                                                            <th className="text-left p-2">{es['Brand']}/{es['Model']}</th>
-                                                            <th className="text-left p-2">{es['Description']}</th>
-                                                            <th className="text-left p-2">{es['Category']}</th>
-                                                            <th className="text-left p-2">{es['Status']}</th>
-                                                            <th className="text-left p-2">{es['Actions']}</th>
+                                                            <th className="p-2 text-left">{es['Tag']}</th>
+                                                            <th className="p-2 text-left">
+                                                                {es['Brand']}/{es['Model']}
+                                                            </th>
+                                                            <th className="p-2 text-left">{es['Description']}</th>
+                                                            <th className="p-2 text-left">{es['Category']}</th>
+                                                            <th className="p-2 text-left">{es['Status']}</th>
+                                                            <th className="p-2 text-left">{es['Actions']}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {equipment.data.map((item, index) => {
+                                                        {equipment.data.map((item) => {
                                                             const statusInfo = getStatusInfo(item.status);
                                                             return (
                                                                 <tr key={item.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                                    <td className="p-2 font-mono font-medium text-blue-600 dark:text-blue-400">{item.asset_tag}</td>
+                                                                    <td className="p-2 font-mono font-medium text-blue-600 dark:text-blue-400">
+                                                                        {item.asset_tag}
+                                                                    </td>
                                                                     <td className="p-2">
                                                                         <div>
                                                                             <p className="font-medium">{item.brand}</p>
@@ -447,12 +478,16 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                                         </div>
                                                                     </td>
                                                                     <td className="p-2">
-                                                                        <p className="text-gray-700 dark:text-gray-300 text-xs">
-                                                                            {item.description || <span className="italic text-gray-500">{es['No description']}</span>}
+                                                                        <p className="text-xs text-gray-700 dark:text-gray-300">
+                                                                            {item.description || (
+                                                                                <span className="text-gray-500 italic">{es['No description']}</span>
+                                                                            )}
                                                                         </p>
                                                                     </td>
                                                                     <td className="p-2">
-                                                                        <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                                                                        <Badge variant="outline" className="text-xs">
+                                                                            {item.category}
+                                                                        </Badge>
                                                                     </td>
                                                                     <td className="p-2 text-center">
                                                                         <Badge variant="outline" className={`text-xs ${statusInfo.className}`}>
@@ -460,7 +495,11 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                                         </Badge>
                                                                     </td>
                                                                     <td className="p-2 text-center">
-                                                                        <Button size="sm" variant="outline" onClick={() => router.get(`/equipment/${item.id}`)}>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => router.get(`/equipment/${item.id}`)}
+                                                                        >
                                                                             <Eye className="h-3 w-3" />
                                                                         </Button>
                                                                     </td>
@@ -470,23 +509,28 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            
+
                                             {/* Pagination - Responsive */}
                                             {equipment.last_page > 1 && (
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-4 border-t">
-                                                    <p className="text-xs text-gray-600 text-center sm:text-left">
-                                                        {es['Showing']} {((equipment.current_page - 1) * equipment.per_page) + 1} {es['to']} {Math.min(equipment.current_page * equipment.per_page, equipment.total)} {es['of']} {equipment.total} {es['equipment']}
+                                                <div className="mt-4 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                                                    <p className="text-center text-xs text-gray-600 sm:text-left">
+                                                        {es['Showing']} {(equipment.current_page - 1) * equipment.per_page + 1} {es['to']}{' '}
+                                                        {Math.min(equipment.current_page * equipment.per_page, equipment.total)} {es['of']}{' '}
+                                                        {equipment.total} {es['equipment']}
                                                     </p>
-                                                    <div className="flex gap-1 justify-center sm:justify-end flex-wrap">
+                                                    <div className="flex flex-wrap justify-center gap-1 sm:justify-end">
                                                         {equipment.links.map((link, index) => {
                                                             if (link.url === null) return null;
                                                             return (
                                                                 <Button
                                                                     key={index}
-                                                                    variant={link.active ? "default" : "outline"}
+                                                                    variant={link.active ? 'default' : 'outline'}
                                                                     size="sm"
-                                                                    className="text-xs px-3 py-1 min-w-[32px]"
-                                                                    onClick={() => router.get(link.url, { equipment_search: search }, { preserveState: true })}
+                                                                    className="min-w-[32px] px-3 py-1 text-xs"
+                                                                    onClick={() =>
+                                                                        link.url &&
+                                                                        router.get(link.url, { equipment_search: search }, { preserveState: true })
+                                                                    }
                                                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                                                 />
                                                             );
@@ -496,7 +540,7 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                             )}
                                         </>
                                     ) : (
-                                        <p className="text-sm text-gray-500 italic text-center py-8">{es['No equipment found']}</p>
+                                        <p className="py-8 text-center text-sm text-gray-500 italic">{es['No equipment found']}</p>
                                     )}
                                 </div>
                             </div>
@@ -504,19 +548,19 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                             {/* Right Column - Additional Info */}
                             <div className="space-y-6">
                                 {/* Roles & Permissions */}
-                                <div className="bg-white dark:bg-gray-800 rounded-lg border p-4 shadow-sm">
-                                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <div className="rounded-lg border bg-white p-4 shadow-sm dark:bg-gray-800">
+                                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         <Shield className="h-5 w-5" />
                                         {es['Roles and Permissions']}
                                     </h2>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 block">
+                                            <label className="mb-2 block text-sm font-medium text-gray-600 dark:text-gray-400">
                                                 {es['Assigned Roles']}
                                             </label>
                                             <div className="flex flex-wrap gap-2">
                                                 {user.roles.map((role) => (
-                                                    <Badge key={role.id} variant="secondary" className="text-sm px-3 py-1">
+                                                    <Badge key={role.id} variant="secondary" className="px-3 py-1 text-sm">
                                                         {role.name}
                                                     </Badge>
                                                 ))}
@@ -524,12 +568,12 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                         </div>
                                         {user.permissions.length > 0 && (
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 block">
+                                                <label className="mb-2 block text-sm font-medium text-gray-600 dark:text-gray-400">
                                                     {es['Direct Permissions']} ({user.permissions.length})
                                                 </label>
-                                                <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
+                                                <div className="flex max-h-32 flex-wrap gap-1 overflow-y-auto">
                                                     {user.permissions.map((permission) => (
-                                                        <Badge key={permission.id} variant="outline" className="text-xs px-2 py-1">
+                                                        <Badge key={permission.id} variant="outline" className="px-2 py-1 text-xs">
                                                             {permission.name}
                                                         </Badge>
                                                     ))}
@@ -540,33 +584,29 @@ export default function Show({ user, equipment, equipment_search, show_all }: Pr
                                 </div>
 
                                 {/* Timestamps */}
-                                <div className="bg-white dark:bg-gray-800 rounded-lg border p-4 shadow-sm">
-                                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <div className="rounded-lg border bg-white p-4 shadow-sm dark:bg-gray-800">
+                                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         <Calendar className="h-5 w-5" />
                                         {es['Important Dates']}
                                     </h2>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                {es['Registration Date']}
-                                            </label>
-                                            <p className="text-base text-gray-900 dark:text-gray-100 mt-1">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{es['Registration Date']}</label>
+                                            <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                                                 {new Date(user.created_at).toLocaleDateString(es['locale'], {
                                                     year: 'numeric',
                                                     month: 'long',
-                                                    day: 'numeric'
+                                                    day: 'numeric',
                                                 })}
                                             </p>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                {es['Last Update']}
-                                            </label>
-                                            <p className="text-base text-gray-900 dark:text-gray-100 mt-1">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">{es['Last Update']}</label>
+                                            <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                                                 {new Date(user.updated_at).toLocaleDateString(es['locale'], {
                                                     year: 'numeric',
                                                     month: 'long',
-                                                    day: 'numeric'
+                                                    day: 'numeric',
                                                 })}
                                             </p>
                                         </div>

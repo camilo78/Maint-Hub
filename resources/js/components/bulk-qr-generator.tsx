@@ -7,7 +7,7 @@ interface Equipment {
     model: string;
     serial_number: string;
     category: string;
-    description: string;
+    description?: string;
     location: string;
     status: string;
 }

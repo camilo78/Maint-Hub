@@ -342,7 +342,10 @@
     "Sale Price": "Sale Price",
     "Cost Price": "Cost Price",
     "Equipments": "Equipments",
-   "Maintenances": "Maintenances",
-   "Client Change Warning": "Client Change Warning"
+    "Maintenances": "Maintenances",
+    "Client Change Warning": "Client Change Warning",
+    "Foreigner": "Foreigner",
+    "All Types": "All Types",
+    "Clear": "Clear"
 
 }

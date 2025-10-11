@@ -49,11 +49,11 @@ export default function EquipmentTable({ equipment, onEdit, onDelete }: Props) {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'buen_estado':
-                return <Badge variant="default" className="bg-green-0 text-white border-green-600">{es['Good Condition']}</Badge>;
+                return <Badge variant="secondary" className=" border-green-500 dark:text-white dark:border-green-500">{es['Good Condition']}</Badge>;
             case 'mal_estado':
-                return <Badge variant="secondary" className="bg-red-0 text-white border-red-600">{es['Bad Condition']}</Badge>;
+                return <Badge variant="secondary" className="border-red-500 dark:text-white dark:border-red-500">{es['Bad Condition']}</Badge>;
             case 'mantenimiento':
-                return <Badge variant="default" className="bg-yellow-0 text-white border-yellow-600">Mantenimiento</Badge>;
+                return <Badge variant="secondary" className="border-yellow-500 dark:text-white dark:border-yellow-500">Mantenimiento</Badge>;
             default:
                 return <Badge variant="secondary">{status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}</Badge>;
         }
@@ -66,7 +66,7 @@ export default function EquipmentTable({ equipment, onEdit, onDelete }: Props) {
                     <TableCaption>{es['A list of all equipment.']}</TableCaption>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[80px]">#</TableHead>
+                            <TableHead className="w-[80px] text-center">#</TableHead>
                             <TableHead>{es['Client']}</TableHead>
                             <TableHead>{es['Equipment']}</TableHead>
                             <TableHead>{es['Category']}</TableHead>
@@ -79,7 +79,7 @@ export default function EquipmentTable({ equipment, onEdit, onDelete }: Props) {
                         {equipment.data.length > 0 ? (
                             equipment.data.map((item: Equipment, index: number) => (
                                 <TableRow key={item.id}>
-                                    <TableCell className="font-medium">
+                                    <TableCell className="font-medium text-center">
                                         {index + 1 + (equipment.current_page - 1) * equipment.per_page}
                                     </TableCell>
                                     <TableCell>
@@ -117,7 +117,7 @@ export default function EquipmentTable({ equipment, onEdit, onDelete }: Props) {
                                             <Pencil className="h-4 w-4" />
                                         </Button>
                                         <Button size="icon" variant="ghost" onClick={() => onDelete(item)}>
-                                            <Trash2 className="text-destructive h-4 w-4" />
+                                            <Trash2 className="text-red-600 h-4 w-4" />
                                         </Button>
                                     </TableCell>
                                 </TableRow>

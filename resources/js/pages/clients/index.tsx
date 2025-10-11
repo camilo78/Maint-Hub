@@ -58,6 +58,7 @@ type Props = {
     status?: string;
     search?: string;
     role?: string;
+    tipo?: string;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -67,8 +68,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type DialogType = 'create' | 'edit' | 'delete' | null;
 
-export default function Index({ users, search: initialSearch }: Props) {
+export default function Index({ users, search: initialSearch, tipo: initialTipo }: Props) {
     const [search, setSearch] = useState(initialSearch ?? '');
+    const [tipo, setTipo] = useState(initialTipo ?? 'all');
     const [openDialog, setOpenDialog] = useState<DialogType>(null);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const defaultFormData = {
@@ -88,9 +90,16 @@ export default function Index({ users, search: initialSearch }: Props) {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        const params: { search?: string } = {};
+        const params: { search?: string; tipo?: string } = {};
         if (search.trim()) params.search = search.trim();
+        if (tipo && tipo !== 'all') params.tipo = tipo;
         router.get('/admin/clients', params, { preserveScroll: true });
+    };
+
+    const handleClear = () => {
+        setSearch('');
+        setTipo('all');
+        router.get('/admin/clients', {}, { preserveScroll: true });
     };
 
     const openModal = (type: DialogType, user: User | null = null) => {
@@ -99,15 +108,15 @@ export default function Index({ users, search: initialSearch }: Props) {
         setData(
             user
                 ? {
-                      ...defaultFormData,
-                      name: user.name,
-                      email: user.email || '',
-                      phone: user.phone,
-                      tipo: user.tipo,
-                      rtn_dni_passport: user.rtn_dni_passport,
-                      address: user.address,
-                      password: '', // Vacío en modo edición
-                  }
+                    ...defaultFormData,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    tipo: user.tipo,
+                    rtn_dni_passport: user.rtn_dni_passport,
+                    address: user.address,
+                    password: '', // Vacío en modo edición
+                }
                 : defaultFormData,
         );
 
@@ -167,8 +176,11 @@ export default function Index({ users, search: initialSearch }: Props) {
                         <Toaster position="top-right" />
                         <UserSearch
                             search={search}
+                            tipo={tipo}
                             onSearchChange={(e) => setSearch(e.target.value)}
+                            onTipoChange={(value) => setTipo(value === 'all' ? '' : value)}
                             onSubmit={handleSearch}
+                            onClear={handleClear}
                         />
 
                         <div className="flex justify-end">

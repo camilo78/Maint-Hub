@@ -13,6 +13,7 @@ interface Props {
     onCategoryChange: (value: string) => void;
     onStatusChange: (value: string) => void;
     onSubmit: (e: React.FormEvent) => void;
+    onClear: () => void;
 }
 
 export default function EquipmentSearch({ 
@@ -23,7 +24,8 @@ export default function EquipmentSearch({
     onSearchChange, 
     onCategoryChange, 
     onStatusChange, 
-    onSubmit 
+    onSubmit,
+    onClear
 }: Props) {
     return (
         <form onSubmit={onSubmit} className="mb-6 space-y-4">
@@ -55,9 +57,9 @@ export default function EquipmentSearch({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">{es['All Status']}</SelectItem>
-                        <SelectItem value="activo">{es['Good Condition']}</SelectItem>
-                        <SelectItem value="inactivo">{es['Bad Condition']}</SelectItem>
-                        <SelectItem value="en_reparacion">{es['Maintenance']}</SelectItem>
+                        <SelectItem value="buen_estado">{es['Good Condition']}</SelectItem>
+                        <SelectItem value="mal_estado">{es['Bad Condition']}</SelectItem>
+                        <SelectItem value="mantenimiento">{es['Maintenance']}</SelectItem>
                     </SelectContent>
                 </Select>
 
@@ -65,11 +67,7 @@ export default function EquipmentSearch({
                     <Button type="submit" variant="outline">
                         <Search className="h-4 w-4" />
                     </Button>
-                    <Button type="button" variant="ghost" onClick={() => {
-                        onSearchChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>);
-                        onCategoryChange('all');
-                        onStatusChange('all');
-                    }}>
+                    <Button type="button" variant="outline" onClick={onClear} className="hover:bg-muted">
                         {es['Clear']}
                     </Button>
                 </div>

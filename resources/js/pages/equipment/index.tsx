@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
@@ -51,6 +51,9 @@ type Props = {
     search?: string;
     category?: string;
     status?: string;
+    flash?: {
+        success?: string;
+    };
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -58,7 +61,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: es['Equipment'], href: '/equipment' },
 ];
 
-export default function Index({ equipment, categories, search: initialSearch, category: initialCategory, status: initialStatus }: Props) {
+export default function Index({ equipment, categories, search: initialSearch, category: initialCategory, status: initialStatus, flash }: Props) {
     const [search, setSearch] = useState(initialSearch ?? '');
     const [category, setCategory] = useState(initialCategory ?? 'all');
     const [status, setStatus] = useState(initialStatus ?? 'all');
@@ -74,6 +77,13 @@ export default function Index({ equipment, categories, search: initialSearch, ca
         if (category && category !== 'all') params.category = category;
         if (status && status !== 'all') params.status = status;
         router.get('/equipment', params, { preserveScroll: true });
+    };
+
+    const handleClear = () => {
+        setSearch('');
+        setCategory('all');
+        setStatus('all');
+        router.get('/equipment', {}, { preserveScroll: true });
     };
 
     const openDeleteDialog = (equipmentItem: Equipment) => {
@@ -102,6 +112,12 @@ export default function Index({ equipment, categories, search: initialSearch, ca
         });
     };
 
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+    }, [flash]);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={es['Manage Equipment']} />
@@ -123,6 +139,7 @@ export default function Index({ equipment, categories, search: initialSearch, ca
                     onCategoryChange={(value) => setCategory(value === 'all' ? '' : value)}
                     onStatusChange={(value) => setStatus(value === 'all' ? '' : value)}
                     onSubmit={handleSearch}
+                    onClear={handleClear}
                 />
 
                 <div className="flex justify-end">
@@ -139,7 +156,7 @@ export default function Index({ equipment, categories, search: initialSearch, ca
 
                 {showDeleteDialog && selectedEquipment && (
                     <Dialog open={showDeleteDialog} onOpenChange={closeDeleteDialog}>
-                        <DialogContent>
+                        <DialogContent className="sm:max-w-sm">
                             <DialogHeader>
                                 <DialogTitle>{es['Delete Equipment']}</DialogTitle>
                                 <DialogDescription>

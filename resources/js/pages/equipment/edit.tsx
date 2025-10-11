@@ -5,7 +5,6 @@ import AppLayout from '@/layouts/app-layout';
 import EquipmentForm from './components/form';
 import { Toaster } from '@/components/ui/sonner';
 import { type BreadcrumbItem } from '@/types';
-import { toast } from 'sonner';
 import es from '@/lang/es';
 
 type Client = {
@@ -46,8 +45,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Edit({ equipment, categories, descriptions, clients }: Props) {
-    const fromClient = new URLSearchParams(window.location.search).get('from_client');
-    
     const { data, setData, put, processing, errors } = useForm({
         client_id: equipment.client_id.toString(),
         category: equipment.category,
@@ -66,16 +63,8 @@ export default function Edit({ equipment, categories, descriptions, clients }: P
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (fromClient) {
-            setData('from_client' as keyof typeof data, '1');
-        }
         put(`/equipment/${equipment.id}`, {
-            onSuccess: () => {
-                toast.success(es['Equipment updated successfully']);
-            },
-            onError: () => {
-                toast.error(es['Failed to update equipment']);
-            },
+            
         });
     };
 

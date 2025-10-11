@@ -61,9 +61,6 @@ export default function Create({ categories, descriptions, clients }: Props) {
             setData('from_client' as keyof typeof data, '1');
         }
         post('/equipment', {
-            onSuccess: () => {
-                toast.success(es['Equipment created successfully']);
-            },
             onError: () => {
                 toast.error(es['Failed to create equipment']);
             },

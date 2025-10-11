@@ -110,8 +110,8 @@ export default function UserForm({
                 <div className="space-y-2">
                     <Label htmlFor="rtn_dni_passport">
                         {data.tipo === 'corporativo' ? (es['RTN'] || 'RTN') + ' (14 dígitos)' : 
-                         data.tipo === 'extranjero' ? (es['Passport'] || 'Pasaporte') + ' (6-12 caracteres)' : 
-                         (es['DNI'] || 'DNI') + ' (13 dígitos)'}
+                        data.tipo === 'extranjero' ? (es['Passport'] || 'Pasaporte') + ' (6-12 caracteres)' : 
+                        (es['DNI'] || 'DNI') + ' (13 dígitos)'}
                     </Label>
                     <Input
                         id="rtn_dni_passport"
