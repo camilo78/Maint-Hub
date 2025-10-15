@@ -47,11 +47,15 @@ interface MaintenanceData {
         id: number;
         path: string;
         original_name: string;
+        size?: number;
+        mime_type?: string;
     }>;
     documents: Array<{
         id: number;
         path: string;
         original_name: string;
+        size?: number;
+        mime_type?: string;
     }>;
 }
 

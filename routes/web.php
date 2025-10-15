@@ -6,6 +6,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\MaintenanceFileController;
 use App\Http\Controllers\SparePartController;
 
 Route::get('/', function () {
@@ -17,7 +18,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Maintenance routes
     Route::resource('maintenances', MaintenanceController::class);
-    
+
+    // Maintenance Files routes
+    Route::post('maintenances/{maintenance}/images', [MaintenanceFileController::class, 'uploadImages'])->name('maintenances.images.upload');
+    Route::delete('maintenance-images/{image}', [MaintenanceFileController::class, 'deleteImage'])->name('maintenances.images.delete');
+    Route::post('maintenances/{maintenance}/documents', [MaintenanceFileController::class, 'uploadDocuments'])->name('maintenances.documents.upload');
+    Route::delete('maintenance-documents/{document}', [MaintenanceFileController::class, 'deleteDocument'])->name('maintenances.documents.delete');
+
+    // Maintenance Spare Parts routes (solo para edición)
+    Route::post('maintenances/{maintenance}/spare-parts', [MaintenanceController::class, 'attachSparePart'])->name('maintenances.spare-parts.attach');
+    Route::delete('maintenances/{maintenance}/spare-parts/{sparePart}', [MaintenanceController::class, 'detachSparePart'])->name('maintenances.spare-parts.detach');
+    Route::put('maintenances/{maintenance}/spare-parts/{sparePart}', [MaintenanceController::class, 'updateSparePart'])->name('maintenances.spare-parts.update');
+
     // Spare Parts routes
     Route::post('spare-parts', [SparePartController::class, 'store'])->name('spare-parts.store');
     Route::put('spare-parts/{sparePart}', [SparePartController::class, 'update'])->name('spare-parts.update');

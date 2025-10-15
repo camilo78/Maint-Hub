@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X, Trash2, Plus, Edit } from 'lucide-react';
 import SparePartModal from './SparePartModal';
+import FileUploadSection from './FileUploadSection';
 import es from '@/lang/es';
 
 interface Client {
@@ -51,11 +53,15 @@ interface MaintenanceData {
         id: number;
         path: string;
         original_name: string;
+        size?: number;
+        mime_type?: string;
     }>;
     documents?: Array<{
         id: number;
         path: string;
         original_name: string;
+        size?: number;
+        mime_type?: string;
     }>;
 }
 
@@ -171,9 +177,45 @@ export default function MaintenanceForm({
         }
     };
 
-    const addSparePart = (sparePartId: number) => {
+    // Agregar repuesto - En modo edición usa API, en modo creación usa estado local
+    const addSparePart = async (sparePartId: number) => {
         const sparePart = availableSpareParts.find(sp => sp.id === sparePartId);
-        if (sparePart && !selectedSpareParts.find(sp => sp.id === sparePartId)) {
+        if (!sparePart || selectedSpareParts.find(sp => sp.id === sparePartId)) {
+            return;
+        }
+
+        // En modo EDICIÓN: Crear la relación inmediatamente vía API
+        if (method === 'put' && maintenance?.id) {
+            try {
+                await axios.post(
+                    route('maintenances.spare-parts.attach', maintenance.id),
+                    {
+                        spare_part_id: sparePartId,
+                        quantity: 1,
+                        observations: ''
+                    }
+                );
+
+                // Agregar al estado local con los datos del servidor
+                setSelectedSpareParts([...selectedSpareParts, {
+                    id: sparePart.id,
+                    name: sparePart.name,
+                    quantity: 1,
+                    observations: '',
+                    sale_price: sparePart.sale_price
+                }]);
+
+                // Mensaje de éxito (opcional)
+                console.log('Repuesto agregado exitosamente');
+            } catch (error) {
+                const errorMessage = error instanceof Error && 'response' in error
+                    ? (error as any).response?.data?.message
+                    : 'Error al agregar el repuesto';
+                alert(errorMessage);
+                console.error('Error:', error);
+            }
+        } else {
+            // En modo CREACIÓN: Solo agregar al estado local
             setSelectedSpareParts([...selectedSpareParts, {
                 id: sparePart.id,
                 name: sparePart.name,
@@ -184,14 +226,60 @@ export default function MaintenanceForm({
         }
     };
 
-    const updateSparePart = (id: number, field: string, value: any) => {
-        setSelectedSpareParts(prev => 
+    // Actualizar cantidad/observaciones - En edición actualiza vía API
+    const updateSparePart = async (id: number, field: string, value: string | number) => {
+        // Actualizar el estado local inmediatamente para UX responsivo
+        setSelectedSpareParts(prev =>
             prev.map(sp => sp.id === id ? { ...sp, [field]: value } : sp)
         );
+
+        // En modo EDICIÓN: Sincronizar con la API
+        if (method === 'put' && maintenance?.id) {
+            try {
+                const updatedSparePart = selectedSpareParts.find(sp => sp.id === id);
+                if (!updatedSparePart) return;
+
+                await axios.put(
+                    route('maintenances.spare-parts.update', [maintenance.id, id]),
+                    {
+                        quantity: field === 'quantity' ? value : updatedSparePart.quantity,
+                        observations: field === 'observations' ? value : updatedSparePart.observations
+                    }
+                );
+            } catch (error) {
+                console.error('Error al actualizar:', error);
+                // Opcional: revertir cambio si falla
+            }
+        }
     };
 
-    const removeSparePart = (id: number) => {
-        setSelectedSpareParts(prev => prev.filter(sp => sp.id !== id));
+    // Eliminar repuesto - En modo edición elimina la relación vía API
+    const removeSparePart = async (id: number) => {
+        if (!confirm('¿Está seguro de eliminar este repuesto?')) {
+            return;
+        }
+
+        // En modo EDICIÓN: Eliminar relación vía API (detach)
+        if (method === 'put' && maintenance?.id) {
+            try {
+                await axios.delete(
+                    route('maintenances.spare-parts.detach', [maintenance.id, id])
+                );
+
+                // Eliminar del estado local tras confirmación del servidor
+                setSelectedSpareParts(prev => prev.filter(sp => sp.id !== id));
+                console.log('Repuesto eliminado exitosamente');
+            } catch (error) {
+                const errorMessage = error instanceof Error && 'response' in error
+                    ? (error as any).response?.data?.message
+                    : 'Error al eliminar el repuesto';
+                alert(errorMessage);
+                console.error('Error:', error);
+            }
+        } else {
+            // En modo CREACIÓN: Solo eliminar del estado local
+            setSelectedSpareParts(prev => prev.filter(sp => sp.id !== id));
+        }
     };
 
     const getPriorityColor = (priority: string) => {
@@ -339,160 +427,140 @@ export default function MaintenanceForm({
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{es['Spare Parts']}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex gap-2">
-                        <div className="flex-1">
-                            <Label>{es['Add Spare Part']}</Label>
-                            <Select onValueChange={(value) => {
-                                addSparePart(parseInt(value));
-                                setSparePartSearch('');
-                            }}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={es['Select spare part']} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <div className="p-2 border-b">
-                                        <Input
-                                            placeholder={es['Search spare part...']}
-                                            value={sparePartSearch}
-                                            onChange={(e) => setSparePartSearch(e.target.value)}
-                                            className="h-8"
-                                        />
-                                    </div>
-                                    {availableSpareParts
-                                        .filter(sp => 
-                                            !selectedSpareParts.find(ssp => ssp.id === sp.id) &&
-                                            (sparePartSearch === '' ||
-                                             sp.name.toLowerCase().includes(sparePartSearch.toLowerCase()) ||
-                                             sp.sku.toLowerCase().includes(sparePartSearch.toLowerCase()))
-                                        )
-                                        .map(sparePart => (
-                                            <SelectItem key={sparePart.id} value={sparePart.id.toString()}>
-                                                {sparePart.name} - {sparePart.sku} (Stock: {sparePart.stock})
-                                            </SelectItem>
-                                        ))}
-                                </SelectContent>
-                            </Select>
+            {/* SOLO MOSTRAR REPUESTOS EN MODO EDICIÓN */}
+            {method === 'put' && maintenance?.id && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{es['Spare Parts']}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <Label>{es['Add Spare Part']}</Label>
+                                <Select onValueChange={(value) => {
+                                    addSparePart(parseInt(value));
+                                    setSparePartSearch('');
+                                }}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={es['Select spare part']} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <div className="p-2 border-b">
+                                            <Input
+                                                placeholder={es['Search spare part...']}
+                                                value={sparePartSearch}
+                                                onChange={(e) => setSparePartSearch(e.target.value)}
+                                                className="h-8"
+                                            />
+                                        </div>
+                                        {availableSpareParts
+                                            .filter(sp =>
+                                                !selectedSpareParts.find(ssp => ssp.id === sp.id) &&
+                                                (sparePartSearch === '' ||
+                                                 sp.name.toLowerCase().includes(sparePartSearch.toLowerCase()) ||
+                                                 sp.sku.toLowerCase().includes(sparePartSearch.toLowerCase()))
+                                            )
+                                            .map(sparePart => (
+                                                <SelectItem key={sparePart.id} value={sparePart.id.toString()}>
+                                                    {sparePart.name} - {sparePart.sku} (Stock: {sparePart.stock})
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="pt-6">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openSparePartModal()}
+                                >
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    {es['New Spare Part']}
+                                </Button>
+                            </div>
                         </div>
-                        <div className="pt-6">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openSparePartModal()}
-                            >
-                                <Plus className="h-4 w-4 mr-1" />
-                                {es['New Spare Part']}
-                            </Button>
-                        </div>
-                    </div>
 
-                    {selectedSpareParts.length > 0 && (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b">
-                                        <th className="text-left p-2">{es['Spare Parts']}</th>
-                                        <th className="text-left p-2">{es['Quantity']}</th>
-                                        <th className="text-left p-2">{es['Unit Price']}</th>
-                                        <th className="text-left p-2">{es['Subtotal']}</th>
-                                        <th className="text-left p-2">{es['Observations']}</th>
-                                        <th className="text-left p-2">{es['Actions']}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {selectedSpareParts.map(sparePart => {
-                                        const sparePartData = availableSpareParts.find(sp => sp.id === sparePart.id);
-                                        return (
-                                        <tr key={sparePart.id} className="border-b">
-                                            <td className="p-2">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium">{sparePart.name}</span>
-                                                    {sparePartData && (
-                                                        <Button
-                                                            type="button"
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => openSparePartModal(sparePartData)}
-                                                            className="h-6 w-6 p-0"
-                                                        >
-                                                            <Edit className="h-3 w-3" />
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="p-2">
-                                                <Input
-                                                    type="number"
-                                                    min="1"
-                                                    value={sparePart.quantity}
-                                                    onChange={(e) => updateSparePart(sparePart.id, 'quantity', parseInt(e.target.value))}
-                                                    className="w-20"
-                                                />
-                                            </td>
-                                            <td className="p-2">${sparePart.sale_price}</td>
-                                            <td className="p-2 font-medium">${(sparePart.quantity * sparePart.sale_price).toFixed(2)}</td>
-                                            <td className="p-2">
-                                                <Input
-                                                    value={sparePart.observations}
-                                                    onChange={(e) => updateSparePart(sparePart.id, 'observations', e.target.value)}
-                                                    placeholder={es['Observations...']}
-                                                />
-                                            </td>
-                                            <td className="p-2">
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => removeSparePart(sparePart.id)}
-                                                >
-                                                    <X className="h-3 w-3" />
-                                                </Button>
-                                            </td>
+                        {selectedSpareParts.length > 0 && (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b">
+                                            <th className="text-left p-2">{es['Spare Parts']}</th>
+                                            <th className="text-left p-2">{es['Quantity']}</th>
+                                            <th className="text-left p-2">{es['Unit Price']}</th>
+                                            <th className="text-left p-2">{es['Subtotal']}</th>
+                                            <th className="text-left p-2">{es['Observations']}</th>
+                                            <th className="text-left p-2">{es['Actions']}</th>
                                         </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                                    </thead>
+                                    <tbody>
+                                        {selectedSpareParts.map(sparePart => {
+                                            const sparePartData = availableSpareParts.find(sp => sp.id === sparePart.id);
+                                            return (
+                                            <tr key={sparePart.id} className="border-b">
+                                                <td className="p-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-medium">{sparePart.name}</span>
+                                                        {sparePartData && (
+                                                            <Button
+                                                                type="button"
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => openSparePartModal(sparePartData)}
+                                                                className="h-6 w-6 p-0"
+                                                            >
+                                                                <Edit className="h-3 w-3" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-2">
+                                                    <Input
+                                                        type="number"
+                                                        min="1"
+                                                        value={sparePart.quantity}
+                                                        onChange={(e) => updateSparePart(sparePart.id, 'quantity', parseInt(e.target.value))}
+                                                        className="w-20"
+                                                    />
+                                                </td>
+                                                <td className="p-2">${sparePart.sale_price}</td>
+                                                <td className="p-2 font-medium">${(sparePart.quantity * sparePart.sale_price).toFixed(2)}</td>
+                                                <td className="p-2">
+                                                    <Input
+                                                        value={sparePart.observations}
+                                                        onChange={(e) => updateSparePart(sparePart.id, 'observations', e.target.value)}
+                                                        placeholder={es['Observations...']}
+                                                    />
+                                                </td>
+                                                <td className="p-2">
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => removeSparePart(sparePart.id)}
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{es['Files']}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="images">{es['Images']}</Label>
-                            <Input
-                                id="images"
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={(e) => setData('images', Array.from(e.target.files || []))}
-                            />
-                        </div>
-
-                        <div>
-                            <Label htmlFor="documents">{es['Documents']}</Label>
-                            <Input
-                                id="documents"
-                                type="file"
-                                multiple
-                                accept=".pdf,.doc,.docx,.txt"
-                                onChange={(e) => setData('documents', Array.from(e.target.files || []))}
-                            />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+            {method === 'put' && (
+                <FileUploadSection
+                    maintenanceId={maintenance?.id}
+                    existingImages={maintenance?.images || []}
+                    existingDocuments={maintenance?.documents || []}
+                />
+            )}
 
             <SparePartModal
                 isOpen={isSparePartModalOpen}

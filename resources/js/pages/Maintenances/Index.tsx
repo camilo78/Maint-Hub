@@ -1,11 +1,12 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableFooter, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
@@ -51,6 +52,9 @@ interface Props {
         priority?: string;
         type?: string;
     };
+    flash?: {
+        success?: string;
+    };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -58,12 +62,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: es['Maintenances'], href: '/maintenances' },
 ];
 
-export default function Index({ maintenances, filters }: Props) {
+export default function Index({ maintenances, filters, flash }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || 'all');
     const [priority, setPriority] = useState(filters.priority || 'all');
     const [type, setType] = useState(filters.type || 'all');
     const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [selectedMaintenance, setSelectedMaintenance] = useState<Maintenance | null>(null);
+
+    const { delete: destroy } = useForm();
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -153,11 +161,37 @@ export default function Index({ maintenances, filters }: Props) {
         setExpandedRows(newExpanded);
     };
 
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this maintenance?')) {
-            router.delete(route('maintenances.destroy', id));
-        }
+    const openDeleteDialog = (maintenance: Maintenance) => {
+        setSelectedMaintenance(maintenance);
+        setShowDeleteDialog(true);
     };
+
+    const closeDeleteDialog = () => {
+        setShowDeleteDialog(false);
+        setSelectedMaintenance(null);
+    };
+
+    const handleDelete = () => {
+        if (!selectedMaintenance) return;
+        destroy(route('maintenances.destroy', selectedMaintenance.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(es['Maintenance deleted successfully']);
+                closeDeleteDialog();
+            },
+            onError: (errors) => {
+                console.error('Delete error:', errors);
+                toast.error(es['Failed to delete maintenance']);
+                closeDeleteDialog();
+            },
+        });
+    };
+
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+    }, [flash]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -302,10 +336,10 @@ export default function Index({ maintenances, filters }: Props) {
                                                         <Edit className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                                <Button 
-                                                    size="icon" 
-                                                    variant="ghost" 
-                                                    onClick={() => handleDelete(maintenance.id)}
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    onClick={() => openDeleteDialog(maintenance)}
                                                 >
                                                     <Trash2 className="text-destructive h-4 w-4" />
                                                 </Button>
@@ -355,6 +389,27 @@ export default function Index({ maintenances, filters }: Props) {
                             />
                         ))}
                     </div>
+                )}
+
+                {showDeleteDialog && selectedMaintenance && (
+                    <Dialog open={showDeleteDialog} onOpenChange={closeDeleteDialog}>
+                        <DialogContent className="sm:max-w-sm">
+                            <DialogHeader>
+                                <DialogTitle>{es['Delete'] + ' ' + es['Maintenance']}</DialogTitle>
+                                <DialogDescription>
+                                    {es['Are you sure you want to delete this maintenance?']}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <Button variant="destructive" onClick={handleDelete}>
+                                    {es['Yes, Delete']}
+                                </Button>
+                                <Button variant="outline" onClick={closeDeleteDialog}>
+                                    {es['Cancel']}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 )}
                     </div>
                 </div>

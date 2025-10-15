@@ -242,4 +242,123 @@ class MaintenanceController extends Controller
                 ->with('error', 'Error deleting maintenance.');
         }
     }
+
+    /**
+     * Agregar un repuesto al mantenimiento
+     * Solo disponible en modo edición
+     */
+    public function attachSparePart(Request $request, Maintenance $maintenance)
+    {
+        try {
+            $validated = $request->validate([
+                'spare_part_id' => 'required|exists:spare_parts,id',
+                'quantity' => 'required|integer|min:1',
+                'observations' => 'nullable|string|max:500'
+            ]);
+
+            // Verificar si el repuesto ya está asociado
+            if ($maintenance->spareParts()->where('spare_part_id', $validated['spare_part_id'])->exists()) {
+                return response()->json([
+                    'message' => 'Este repuesto ya está asociado al mantenimiento.'
+                ], 422);
+            }
+
+            // Attach del repuesto con datos pivot
+            $maintenance->spareParts()->attach($validated['spare_part_id'], [
+                'quantity' => $validated['quantity'],
+                'observations' => $validated['observations'] ?? null
+            ]);
+
+            // Recargar la relación con los datos pivot
+            $maintenance->load('spareParts');
+
+            // Obtener el repuesto recién agregado con su información pivot
+            $addedSparePart = $maintenance->spareParts()
+                ->where('spare_part_id', $validated['spare_part_id'])
+                ->first();
+
+            return response()->json([
+                'message' => 'Repuesto agregado exitosamente.',
+                'spare_part' => $addedSparePart
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al agregar el repuesto: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar un repuesto del mantenimiento
+     * Solo elimina la relación, no el repuesto ni el mantenimiento
+     */
+    public function detachSparePart(Maintenance $maintenance, SparePart $sparePart)
+    {
+        try {
+            // Verificar si el repuesto está asociado
+            if (!$maintenance->spareParts()->where('spare_part_id', $sparePart->id)->exists()) {
+                return response()->json([
+                    'message' => 'El repuesto no está asociado a este mantenimiento.'
+                ], 404);
+            }
+
+            // Detach del repuesto (solo elimina la relación pivot)
+            $maintenance->spareParts()->detach($sparePart->id);
+
+            return response()->json([
+                'message' => 'Repuesto eliminado del mantenimiento exitosamente.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el repuesto: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Actualizar la cantidad/observaciones de un repuesto asociado
+     */
+    public function updateSparePart(Request $request, Maintenance $maintenance, SparePart $sparePart)
+    {
+        try {
+            $validated = $request->validate([
+                'quantity' => 'required|integer|min:1',
+                'observations' => 'nullable|string|max:500'
+            ]);
+
+            // Verificar si el repuesto está asociado
+            if (!$maintenance->spareParts()->where('spare_part_id', $sparePart->id)->exists()) {
+                return response()->json([
+                    'message' => 'El repuesto no está asociado a este mantenimiento.'
+                ], 404);
+            }
+
+            // Actualizar los datos pivot
+            $maintenance->spareParts()->updateExistingPivot($sparePart->id, [
+                'quantity' => $validated['quantity'],
+                'observations' => $validated['observations'] ?? null
+            ]);
+
+            return response()->json([
+                'message' => 'Repuesto actualizado exitosamente.'
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el repuesto: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

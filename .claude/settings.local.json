@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan storage:link)",
+      "Bash(php artisan:*)",
+      "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan migrate)",
+      "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan route:clear)",
+      "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan route:list --name=maintenances)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
