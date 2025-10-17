@@ -44,13 +44,14 @@ export default function UserForm({
             <div className="grid grid-cols-2 gap-4">
                 {/* Name */}
                 <div className="space-y-2">
-                    <Label htmlFor="name">{es['Name'] || 'Nombre'}</Label>
+                    <Label htmlFor="client-name">{es['Name'] || 'Nombre'}</Label>
                     <Input
-                        id="name"
+                        id="client-name"
+                        name="name"
                         value={data.name}
                         onChange={(e) => onChange('name', e.target.value)}
                         required
-                        autoComplete="off"
+                        autoComplete="name"
                         className="w-full"
                     />
                     <InputError message={errors.name} />
@@ -58,31 +59,34 @@ export default function UserForm({
 
                 {/* Email */}
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="client-email">Email</Label>
                     <Input
                         type="email"
-                        id="email"
+                        id="client-email"
+                        name="email"
                         value={data.email}
                         onChange={(e) => onChange('email', e.target.value)}
-                        autoComplete="off"
+                        autoComplete="email"
                         className="w-full"
                     />
                     <InputError message={errors.email} />
                 </div>
 
             </div>
-            
+
             {/* Phone, Type, Document in 3 columns */}
             <div className="grid grid-cols-3 gap-4">
                 {/* Phone */}
                 <div className="space-y-2">
-                    <Label htmlFor="phone">{es['Phone'] || 'Teléfono'}</Label>
+                    <Label htmlFor="client-phone">{es['Phone'] || 'Teléfono'}</Label>
                     <Input
-                        id="phone"
+                        id="client-phone"
+                        name="phone"
+                        type="tel"
                         value={data.phone}
                         onChange={(e) => onChange('phone', e.target.value)}
                         required
-                        autoComplete="off"
+                        autoComplete="tel"
                         className="w-full"
                     />
                     <InputError message={errors.phone} />
@@ -90,12 +94,13 @@ export default function UserForm({
 
                 {/* Tipo */}
                 <div className="space-y-2">
-                    <Label htmlFor="tipo">{es['Type'] || 'Tipo'}</Label>
+                    <Label htmlFor="client-tipo">{es['Type'] || 'Tipo'}</Label>
                     <select
-                        id="tipo"
+                        id="client-tipo"
+                        name="tipo"
                         value={data.tipo}
                         onChange={(e) => onChange('tipo', e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         required
                     >
                         <option value="">{es['Select a type'] || 'Seleccionar tipo'}</option>
@@ -108,13 +113,14 @@ export default function UserForm({
 
                 {/* RTN/DNI/Passport */}
                 <div className="space-y-2">
-                    <Label htmlFor="rtn_dni_passport">
-                        {data.tipo === 'corporativo' ? (es['RTN'] || 'RTN') + ' (14 dígitos)' : 
-                        data.tipo === 'extranjero' ? (es['Passport'] || 'Pasaporte') + ' (6-12 caracteres)' : 
+                    <Label htmlFor="client-rtn-dni-passport">
+                        {data.tipo === 'corporativo' ? (es['RTN'] || 'RTN') + ' (14 dígitos)' :
+                        data.tipo === 'extranjero' ? (es['Passport'] || 'Pasaporte') + ' (6-12 caracteres)' :
                         (es['DNI'] || 'DNI') + ' (13 dígitos)'}
                     </Label>
                     <Input
-                        id="rtn_dni_passport"
+                        id="client-rtn-dni-passport"
+                        name="rtn_dni_passport"
                         value={data.rtn_dni_passport}
                         className="w-full"
                         onChange={(e) => {
@@ -145,39 +151,40 @@ export default function UserForm({
                         required
                         autoComplete="off"
                         placeholder={
-                            data.tipo === 'corporativo' ? '14 dígitos' : 
-                            data.tipo === 'extranjero' ? 'Ej: AB1234567' : 
+                            data.tipo === 'corporativo' ? '14 dígitos' :
+                            data.tipo === 'extranjero' ? 'Ej: AB1234567' :
                             '13 dígitos'
                         }
                         maxLength={
-                            data.tipo === 'corporativo' ? 14 : 
-                            data.tipo === 'extranjero' ? 12 : 
+                            data.tipo === 'corporativo' ? 14 :
+                            data.tipo === 'extranjero' ? 12 :
                             13
                         }
                     />
                     <InputError message={errors.rtn_dni_passport} />
                 </div>
             </div>
-            
+
             {/* Password and Address in 2 columns */}
             <div className="grid grid-cols-2 gap-4">
 
                 {/* Contraseña */}
                 <div className="space-y-1">
-                    <Label htmlFor="password">
+                    <Label htmlFor="client-password">
                         {es['Password'] || 'Contraseña'}
                         {isEditing && <span className="text-sm text-muted-foreground ml-1">(opcional)</span>}
                     </Label>
                     <Input
                         type="password"
-                        id="password"
+                        id="client-password"
+                        name="password"
                         value={data.password}
                         className="w-full"
                         onChange={(e) => {
                             onChange('password', e.target.value);
                             if (isEditing) setPasswordTouched(true);
                         }}
-                        autoComplete="off"
+                        autoComplete={isEditing ? "new-password" : "off"}
                         required={!isEditing}
                         placeholder={isEditing ? 'Dejar vacío para mantener contraseña actual' : 'Se auto-completa con el documento'}
                     />
@@ -190,14 +197,16 @@ export default function UserForm({
                 </div>
                 {/* Dirección */}
                 <div className="space-y-2">
-                    <Label htmlFor="address">{es['Address'] || 'Dirección'}</Label>
+                    <Label htmlFor="client-address">{es['Address'] || 'Dirección'}</Label>
                     <textarea
-                        id="address"
+                        id="client-address"
+                        name="address"
                         value={data.address || ''}
                         onChange={(e) => onChange('address', e.target.value)}
                         className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder={es['Enter complete address'] || 'Ingrese la dirección completa'}
                         rows={3}
+                        autoComplete="street-address"
                     />
                     <InputError message={errors.address} />
                 </div>

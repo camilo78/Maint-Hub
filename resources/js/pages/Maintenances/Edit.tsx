@@ -59,14 +59,31 @@ interface MaintenanceData {
     }>;
 }
 
+interface Technician {
+    id: number;
+    name: string;
+    email?: string;
+    employee_id?: string;
+}
+
+interface CrewMember {
+    id: number;
+    name: string;
+    email?: string;
+    employee_id?: string;
+    is_leader: boolean;
+}
+
 interface Props {
     maintenance: MaintenanceData;
     clients: Client[];
     equipment: Equipment[];
     spareParts: SparePart[];
+    technicians: Technician[];
+    assignedCrew: CrewMember[];
 }
 
-export default function Edit({ maintenance, clients, equipment, spareParts }: Props) {
+export default function Edit({ maintenance, clients, equipment, spareParts, technicians, assignedCrew }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: es['Dashboard'], href: '/dashboard' },
         { title: es['Maintenances'], href: '/maintenances' },
@@ -96,6 +113,8 @@ export default function Edit({ maintenance, clients, equipment, spareParts }: Pr
                                 clients={clients}
                                 equipment={equipment}
                                 spareParts={spareParts}
+                                technicians={technicians}
+                                assignedCrew={assignedCrew}
                                 submitRoute="maintenances.update"
                                 method="put"
                             />

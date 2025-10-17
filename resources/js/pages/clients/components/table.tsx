@@ -1,9 +1,9 @@
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import es from '@/lang/es';
 import { router } from '@inertiajs/react';
 import { ChevronDown, ChevronRight, Eye, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 
 type Role = {
     id: number;
@@ -70,8 +70,8 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                     <TableBody>
                         {users.data.length > 0 ? (
                             users.data.map((user: User, index: number) => (
-                                <>
-                                    <TableRow key={user.id}>
+                                <React.Fragment key={user.id}>
+                                    <TableRow>
                                         <TableCell className="text-center">
                                             <Button variant="ghost" size="sm" onClick={() => toggleRow(user.id)} className="h-6 w-6 p-0">
                                                 {expandedRows.has(user.id) ? (
@@ -162,7 +162,7 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                                             </TableCell>
                                         </TableRow>
                                     )}
-                                </>
+                                </React.Fragment>
                             ))
                         ) : (
                             <TableRow>

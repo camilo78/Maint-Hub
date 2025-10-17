@@ -87,6 +87,13 @@ class Maintenance extends Model
         return $this->hasMany(MaintenanceDocument::class);
     }
 
+    public function crew(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'maintenance_user')
+            ->withPivot('is_leader')
+            ->withTimestamps();
+    }
+
     // ========== ACCESSORS ==========
 
     /**
@@ -184,6 +191,30 @@ class Maintenance extends Model
     public function getDocumentsCountAttribute(): int
     {
         return $this->documents()->count();
+    }
+
+    /**
+     * Obtener el líder de la cuadrilla
+     */
+    public function getLeaderAttribute(): ?User
+    {
+        return $this->crew()->wherePivot('is_leader', true)->first();
+    }
+
+    /**
+     * Verificar si tiene un líder asignado
+     */
+    public function getHasLeaderAttribute(): bool
+    {
+        return $this->crew()->wherePivot('is_leader', true)->exists();
+    }
+
+    /**
+     * Obtener el conteo de miembros de la cuadrilla
+     */
+    public function getCrewCountAttribute(): int
+    {
+        return $this->crew()->count();
     }
 
     /**

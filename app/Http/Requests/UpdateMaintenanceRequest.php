@@ -20,7 +20,11 @@ class UpdateMaintenanceRequest extends FormRequest
             'priority' => 'required|in:red,orange,yellow,green',
             'type' => 'required|in:preventive,corrective',
             'status' => 'required|in:pending,in_progress,completed,rescheduled,cancelled',
-            'cost' => 'nullable|numeric|min:0',
+            'cost' => [
+                $this->input('status') === 'completed' ? 'required' : 'nullable',
+                'numeric',
+                'min:0'
+            ],
             
             'spare_parts' => 'nullable|array',
             'spare_parts.*.id' => 'required|exists:spare_parts,id',
@@ -37,6 +41,13 @@ class UpdateMaintenanceRequest extends FormRequest
             'delete_images.*' => 'exists:maintenance_images,id',
             'delete_documents' => 'nullable|array',
             'delete_documents.*' => 'exists:maintenance_documents,id'
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'cost.required' => 'El campo costo es obligatorio cuando el estado es Finalizado.',
         ];
     }
 }

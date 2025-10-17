@@ -35,16 +35,16 @@ class SparePartController extends Controller
     public function update(Request $request, SparePart $sparePart)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'sku' => ['required', 'string', 'max:255', Rule::unique('spare_parts', 'sku')->ignore($sparePart->id)],
+            'name' => 'sometimes|string|max:255',
+            'sku' => ['sometimes', 'string', 'max:255', Rule::unique('spare_parts', 'sku')->ignore($sparePart->id)],
             'description' => 'nullable|string',
             'brand' => 'nullable|string|max:255',
             'part_number' => 'nullable|string|max:255',
-            'stock' => 'required|integer|min:0',
-            'minimum_stock' => 'required|integer|min:0',
+            'stock' => 'sometimes|integer|min:0',
+            'minimum_stock' => 'sometimes|integer|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'unit_measure' => 'required|string|max:255',
+            'unit_measure' => 'sometimes|string|max:255',
             'location' => 'nullable|string|max:255',
         ]);
 

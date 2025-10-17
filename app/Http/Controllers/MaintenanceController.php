@@ -72,7 +72,7 @@ class MaintenanceController extends Controller
             ]);
         } catch (\Exception $e) {
             return redirect()->route('maintenances.index')
-                ->with('error', 'Error loading create form.');
+                ->with('error', 'Error al cargar el formulario de creación.');
         }
     }
 
@@ -80,58 +80,66 @@ class MaintenanceController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $maintenance = Maintenance::create($request->validated());
 
-            if ($request->has('spare_parts')) {
-                $sparePartsData = [];
-                foreach ($request->input('spare_parts', []) as $sparePart) {
-                    $sparePartsData[$sparePart['id']] = [
-                        'quantity' => $sparePart['quantity'],
-                        'observations' => $sparePart['observations'] ?? null
-                    ];
-                }
-                $maintenance->spareParts()->attach($sparePartsData);
-            }
-
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $path = $image->store('maintenances/images', 'public');
-                    MaintenanceImage::create([
-                        'maintenance_id' => $maintenance->id,
-                        'path' => $path,
-                        'original_name' => $image->getClientOriginalName()
-                    ]);
-                }
-            }
-
-            if ($request->hasFile('documents')) {
-                foreach ($request->file('documents') as $document) {
-                    $path = $document->store('maintenances/documents', 'public');
-                    MaintenanceDocument::create([
-                        'maintenance_id' => $maintenance->id,
-                        'path' => $path,
-                        'original_name' => $document->getClientOriginalName()
-                    ]);
-                }
-            }
-
             DB::commit();
-            
-            return redirect()->route('maintenances.index')
-                ->with('success', 'Maintenance created successfully.');
+
+            return redirect()->route('maintenances.edit', $maintenance)
+                ->with('success', 'Mantenimiento creado exitosamente. Ahora puedes agregar repuestos, cuadrilla y archivos.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Error creating maintenance: ' . $e->getMessage());
+                ->with('error', 'Error al crear el mantenimiento: ' . $e->getMessage());
+        }
+    }
+
+    public function show(Maintenance $maintenance)
+    {
+        try {
+            // Cargar todas las relaciones necesarias
+            $maintenance->load([
+                'client:id,name,email,phone',
+                'equipment:id,description,asset_tag,brand,model,serial_number,category,location',
+                'equipment.client:id,name',
+                'spareParts' => function ($query) {
+                    $query->select('spare_parts.id', 'name', 'sku', 'sale_price', 'unit_measure');
+                },
+                'images',
+                'documents',
+                'crew' => function ($query) {
+                    $query->select('users.id', 'name', 'email', 'employee_id', 'career');
+                }
+            ]);
+
+            // Formatear la cuadrilla con información del pivote
+            $formattedCrew = $maintenance->crew->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'employee_id' => $user->employee_id,
+                    'career' => $user->career,
+                    'is_leader' => (bool) $user->pivot->is_leader
+                ];
+            });
+
+            return Inertia::render('Maintenances/Show', [
+                'maintenance' => array_merge($maintenance->toArray(), [
+                    'crew' => $formattedCrew
+                ])
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->route('maintenances.index')
+                ->with('error', 'Error al cargar los detalles del mantenimiento.');
         }
     }
 
     public function edit(Maintenance $maintenance)
     {
         try {
-            $maintenance->load(['spareParts', 'images', 'documents']);
+            $maintenance->load(['spareParts', 'images', 'documents', 'crew']);
 
             $clients = User::whereHas('roles', function($q) {
                 $q->where('name', 'Client');
@@ -140,15 +148,33 @@ class MaintenanceController extends Controller
             $equipment = Equipment::with('client:id,name')->get(['id', 'description', 'asset_tag', 'client_id']);
             $spareParts = SparePart::all(['id', 'name', 'sku', 'sale_price', 'stock']);
 
+            // Obtener todos los técnicos disponibles
+            $technicians = User::whereHas('roles', function($q) {
+                $q->where('name', 'Employee');
+            })->get(['id', 'name', 'email', 'employee_id']);
+
+            // Formatear la cuadrilla asignada con el pivote
+            $assignedCrew = $maintenance->crew->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'employee_id' => $user->employee_id,
+                    'is_leader' => (bool) $user->pivot->is_leader
+                ];
+            });
+
             return Inertia::render('Maintenances/Edit', [
                 'maintenance' => $maintenance,
                 'clients' => $clients,
                 'equipment' => $equipment,
-                'spareParts' => $spareParts
+                'spareParts' => $spareParts,
+                'technicians' => $technicians,
+                'assignedCrew' => $assignedCrew
             ]);
         } catch (\Exception $e) {
             return redirect()->route('maintenances.index')
-                ->with('error', 'Error loading edit form.');
+                ->with('error', 'Error al cargar el formulario de edición.');
         }
     }
 
@@ -156,69 +182,18 @@ class MaintenanceController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $maintenance->update($request->validated());
-
-            if ($request->has('spare_parts')) {
-                $sparePartsData = [];
-                foreach ($request->input('spare_parts', []) as $sparePart) {
-                    $sparePartsData[$sparePart['id']] = [
-                        'quantity' => $sparePart['quantity'],
-                        'observations' => $sparePart['observations'] ?? null
-                    ];
-                }
-                $maintenance->spareParts()->sync($sparePartsData);
-            } else {
-                $maintenance->spareParts()->detach();
-            }
-
-            if ($request->has('delete_images')) {
-                $imagesToDelete = MaintenanceImage::whereIn('id', $request->input('delete_images'))->get();
-                foreach ($imagesToDelete as $image) {
-                    Storage::disk('public')->delete($image->path);
-                    $image->delete();
-                }
-            }
-
-            if ($request->has('delete_documents')) {
-                $documentsToDelete = MaintenanceDocument::whereIn('id', $request->input('delete_documents'))->get();
-                foreach ($documentsToDelete as $document) {
-                    Storage::disk('public')->delete($document->path);
-                    $document->delete();
-                }
-            }
-
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $path = $image->store('maintenances/images', 'public');
-                    MaintenanceImage::create([
-                        'maintenance_id' => $maintenance->id,
-                        'path' => $path,
-                        'original_name' => $image->getClientOriginalName()
-                    ]);
-                }
-            }
-
-            if ($request->hasFile('documents')) {
-                foreach ($request->file('documents') as $document) {
-                    $path = $document->store('maintenances/documents', 'public');
-                    MaintenanceDocument::create([
-                        'maintenance_id' => $maintenance->id,
-                        'path' => $path,
-                        'original_name' => $document->getClientOriginalName()
-                    ]);
-                }
-            }
 
             DB::commit();
             
             return redirect()->route('maintenances.index')
-                ->with('success', 'Maintenance updated successfully.');
+                ->with('success', 'Mantenimiento actualizado exitosamente.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Error updating maintenance: ' . $e->getMessage());
+                ->with('error', 'Error al actualizar el mantenimiento: ' . $e->getMessage());
         }
     }
 
@@ -236,10 +211,10 @@ class MaintenanceController extends Controller
             $maintenance->delete();
 
             return redirect()->route('maintenances.index')
-                ->with('success', 'Maintenance deleted successfully.');
+                ->with('success', 'Mantenimiento eliminado exitosamente.');
         } catch (\Exception $e) {
             return redirect()->route('maintenances.index')
-                ->with('error', 'Error deleting maintenance.');
+                ->with('error', 'Error al eliminar el mantenimiento.');
         }
     }
 

@@ -107,10 +107,11 @@ const es = {
     Loading: 'Cargando',
     'No data available': 'No hay datos disponibles',
     Stock: 'Stock',
+    Close: 'Cerrar',
     // Spare Parts Modal
     'New Spare Part': 'Nuevo Repuesto',
     'Edit Spare Part': 'Editar Repuesto',
-    Name: 'Nombresdf',
+    Name: 'Nombre',
     'Stock Keeping Unit': 'Código de Inventario',
     'Part Number': 'Número de Parte',
     'Minimum Stock': 'Stock Mínimo',
@@ -273,6 +274,26 @@ const es = {
     'Are you sure you want to delete this image?': '¿Está seguro de que desea eliminar esta imagen?',
     'Are you sure you want to delete this document?': '¿Está seguro de que desea eliminar este documento?',
     'Uploading...': 'Subiendo...',
+    // Error messages
+    'Failed to upload images': 'Error al subir las imágenes',
+    'Failed to upload documents': 'Error al subir los documentos',
+    'Failed to delete image': 'Error al eliminar la imagen',
+    'Failed to delete document': 'Error al eliminar el documento',
+    'Error al asignar técnico': 'Error al asignar técnico',
+    'Error al eliminar técnico': 'Error al eliminar técnico',
+    'Error al cambiar líder': 'Error al cambiar líder',
+    'Error al agregar el repuesto': 'Error al agregar el repuesto',
+    'Error al eliminar el repuesto': 'Error al eliminar el repuesto',
+    'Error al actualizar': 'Error al actualizar',
+    'Upload failed': 'Error al subir',
+    'Delete failed': 'Error al eliminar',
+    // Spare Part Modal additional translations
+    'SKU existente': 'SKU existente',
+    'Se genera automáticamente': 'Se genera automáticamente',
+    'No se puede modificar el SKU de repuestos existentes': 'No se puede modificar el SKU de repuestos existentes',
+    'Se genera automáticamente basado en nombre y unidad': 'Se genera automáticamente basado en nombre y unidad',
+    'No se puede modificar el nombre de repuestos existentes': 'No se puede modificar el nombre de repuestos existentes',
+    'El campo costo es obligatorio cuando el estado es Finalizado': 'El campo costo es obligatorio cuando el estado es Finalizado',
 };
 
 export default es;

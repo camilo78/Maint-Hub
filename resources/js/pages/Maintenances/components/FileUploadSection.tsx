@@ -1,11 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    ChevronDown,
-    ChevronUp,
     Upload,
     X,
     Download,
@@ -37,8 +34,6 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
     const [documents, setDocuments] = useState<FileItem[]>(existingDocuments || []);
     const [uploadingImages, setUploadingImages] = useState(false);
     const [uploadingDocuments, setUploadingDocuments] = useState(false);
-    const [imagesExpanded, setImagesExpanded] = useState(true);
-    const [documentsExpanded, setDocumentsExpanded] = useState(true);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || !maintenanceId) return;
@@ -64,8 +59,8 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
             setImages(prev => [...prev, ...response.data.images]);
             e.target.value = '';
         } catch (error: any) {
-            console.error('Upload failed:', error);
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to upload images';
+            console.error(es['Upload failed'], error);
+            const errorMessage = error.response?.data?.message || error.message || es['Failed to upload images'];
             alert(errorMessage);
         } finally {
             setUploadingImages(false);
@@ -96,8 +91,8 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
             setDocuments(prev => [...prev, ...response.data.documents]);
             e.target.value = '';
         } catch (error: any) {
-            console.error('Upload failed:', error);
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to upload documents';
+            console.error(es['Upload failed'], error);
+            const errorMessage = error.response?.data?.message || error.message || es['Failed to upload documents'];
             alert(errorMessage);
         } finally {
             setUploadingDocuments(false);
@@ -111,8 +106,8 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
             await axios.delete(route('maintenances.images.delete', imageId));
             setImages(prev => prev.filter(img => img.id !== imageId));
         } catch (error: any) {
-            console.error('Delete failed:', error);
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to delete image';
+            console.error(es['Delete failed'], error);
+            const errorMessage = error.response?.data?.message || error.message || es['Failed to delete image'];
             alert(errorMessage);
         }
     };
@@ -124,8 +119,8 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
             await axios.delete(route('maintenances.documents.delete', documentId));
             setDocuments(prev => prev.filter(doc => doc.id !== documentId));
         } catch (error: any) {
-            console.error('Delete failed:', error);
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to delete document';
+            console.error(es['Delete failed'], error);
+            const errorMessage = error.response?.data?.message || error.message || es['Failed to delete document'];
             alert(errorMessage);
         }
     };
@@ -142,58 +137,34 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
     };
 
     return (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* SECCIÓN DE IMÁGENES */}
-            <Card className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow duration-200">
-                <CardHeader
-                    className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors duration-150 rounded-t-lg"
-                    onClick={() => setImagesExpanded(!imagesExpanded)}
-                >
+            <Card>
+                <CardHeader>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 flex-1">
-                            <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
-                                <ImageIcon className="h-5 w-5 text-white" />
-                            </div>
-                            <div className="flex-1">
-                                <CardTitle className="text-lg font-semibold text-gray-800">
-                                    {es['Images']}
-                                </CardTitle>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                                        {images.length} {images.length === 1 ? 'imagen' : 'imágenes'}
-                                    </span>
-                                    {uploadingImages && (
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
-                                            <Loader2 className="h-3 w-3 animate-spin" />
-                                            Subiendo...
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-9 w-9 p-0 hover:bg-blue-100 rounded-full transition-colors"
-                        >
-                            {imagesExpanded ? (
-                                <ChevronUp className="h-5 w-5 text-gray-600" />
-                            ) : (
-                                <ChevronDown className="h-5 w-5 text-gray-600" />
+                            <CardTitle className="flex items-center gap-2">
+                                <ImageIcon className="h-5 w-5 text-gray-600" />
+                                {es['Images']}
+                                <span className="text-sm font-normal text-gray-500">
+                                    ({images.length})
+                                </span>
+                            </CardTitle>
+                            {uploadingImages && (
+                                <span className="flex items-center gap-1.5 text-xs text-blue-600">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Subiendo...
+                                </span>
                             )}
-                        </Button>
+                        </div>
                     </div>
                 </CardHeader>
 
-                {imagesExpanded && (
-                    <CardContent className="space-y-4 pt-4">
+                <CardContent className="space-y-4">
                         {!maintenanceId ? (
-                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 border-l-4 border-yellow-400 rounded-lg shadow-sm">
-                                <div className="p-2 bg-white rounded-full">
-                                    <AlertCircle className="h-5 w-5 text-yellow-600" />
-                                </div>
-                                <p className="text-sm text-yellow-800 font-medium">
+                            <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                                <p className="text-sm text-yellow-800">
                                     {es['Save the maintenance first to upload images']}
                                 </p>
                             </div>
@@ -201,18 +172,11 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
                             <>
                                 <div className="relative">
                                     <label className="block">
-                                        <div className="group relative flex items-center justify-center gap-3 px-6 py-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md">
-                                            <div className="p-2 bg-white rounded-lg group-hover:bg-blue-500 transition-colors">
-                                                <Upload className="h-5 w-5 text-blue-500 group-hover:text-white transition-colors" />
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-sm font-medium text-gray-700 group-hover:text-blue-700">
-                                                    {uploadingImages ? 'Subiendo imágenes...' : 'Click para subir imágenes'}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    PNG, JPG, GIF hasta 10MB
-                                                </p>
-                                            </div>
+                                        <div className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer">
+                                            <Upload className="h-4 w-4 text-gray-500" />
+                                            <span className="text-sm text-gray-600">
+                                                {uploadingImages ? 'Subiendo...' : 'Click para subir imágenes'}
+                                            </span>
                                         </div>
                                         <Input
                                             type="file"
@@ -225,135 +189,86 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
                                     </label>
                                 </div>
 
-                                {uploadingImages && (
-                                    <div className="flex items-center gap-3 text-sm text-blue-700 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200 shadow-sm">
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                        <div>
-                                            <p className="font-medium">Subiendo imágenes...</p>
-                                            <p className="text-xs text-blue-600 mt-0.5">Por favor espere un momento</p>
-                                        </div>
-                                    </div>
-                                )}
-
                                 {images.length > 0 && (
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h4 className="text-sm font-medium text-gray-700">
-                                                Imágenes cargadas ({images.length})
-                                            </h4>
-                                        </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                            {images.map((image) => (
-                                                <div key={image.id} className="relative group">
-                                                    <div className="aspect-square rounded-xl overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-lg bg-gray-50">
-                                                        <img
-                                                            src={`/storage/${image.path}`}
-                                                            alt={image.original_name}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                                        />
-                                                        <div className="absolute inset-0 bg-opacity-0 group-hover:bg-black group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center gap-2">
-                                                            <Button
-                                                                type="button"
-                                                                size="sm"
-                                                                variant="secondary"
-                                                                className="opacity-0 group-hover:opacity-100 transition-all shadow-lg h-9 w-9 p-0 bg-white hover:bg-blue-50"
-                                                                onClick={() => window.open(`/storage/${image.path}`, '_blank')}
-                                                            >
-                                                                <Eye className="h-4 w-4 text-blue-600" />
-                                                            </Button>
-                                                            <Button
-                                                                type="button"
-                                                                size="sm"
-                                                                variant="destructive"
-                                                                className="opacity-0 group-hover:opacity-100 transition-all shadow-lg h-9 w-9 p-0"
-                                                                onClick={() => handleImageDelete(image.id)}
-                                                            >
-                                                                <X className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                    <div className="mt-2 px-1">
-                                                        <p className="text-xs font-medium text-gray-700 truncate" title={image.original_name}>
-                                                            {image.original_name}
-                                                        </p>
-                                                        {image.size && (
-                                                            <p className="text-xs text-gray-500 mt-0.5">
-                                                                {formatFileSize(image.size)}
-                                                            </p>
-                                                        )}
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                        {images.map((image) => (
+                                            <div key={image.id}>
+                                                <div className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors bg-gray-50">
+                                                    <img
+                                                        src={`/storage/${image.path}`}
+                                                        alt={image.original_name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-200 flex items-center justify-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            className="opacity-0 group-hover:opacity-100 transition-all duration-200 h-9 w-9 rounded-lg bg-white hover:bg-blue-500 text-gray-700 hover:text-white flex items-center justify-center shadow-lg hover:scale-110"
+                                                            onClick={() => window.open(`/storage/${image.path}`, '_blank')}
+                                                            title="Ver imagen"
+                                                        >
+                                                            <Eye className="h-5 w-5" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="opacity-0 group-hover:opacity-100 transition-all duration-200 h-9 w-9 rounded-lg bg-white hover:bg-red-500 text-gray-700 hover:text-white flex items-center justify-center shadow-lg hover:scale-110"
+                                                            onClick={() => handleImageDelete(image.id)}
+                                                            title="Eliminar imagen"
+                                                        >
+                                                            <X className="h-5 w-5" />
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
+                                                <p className="text-xs text-gray-600 mt-1.5 truncate" title={image.original_name}>
+                                                    {image.original_name}
+                                                </p>
+                                                {image.size && (
+                                                    <p className="text-xs text-gray-400">
+                                                        {formatFileSize(image.size)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
 
                                 {images.length === 0 && !uploadingImages && (
-                                    <div className="text-center py-12 px-4">
-                                        <div className="inline-flex p-4 bg-gray-100 rounded-full mb-3">
-                                            <ImageIcon className="h-10 w-10 text-gray-400" />
-                                        </div>
-                                        <p className="text-sm font-medium text-gray-600">No hay imágenes cargadas</p>
-                                        <p className="text-xs text-gray-500 mt-1">Sube imágenes para documentar el mantenimiento</p>
+                                    <div className="text-center py-8 text-gray-400">
+                                        <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm">No hay imágenes cargadas</p>
                                     </div>
                                 )}
                             </>
                         )}
                     </CardContent>
-                )}
             </Card>
 
             {/* SECCIÓN DE DOCUMENTOS */}
-            <Card className="border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-shadow duration-200">
-                <CardHeader
-                    className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors duration-150 rounded-t-lg"
-                    onClick={() => setDocumentsExpanded(!documentsExpanded)}
-                >
+            <Card>
+                <CardHeader>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 flex-1">
-                            <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-sm">
-                                <FileText className="h-5 w-5 text-white" />
-                            </div>
-                            <div className="flex-1">
-                                <CardTitle className="text-lg font-semibold text-gray-800">
-                                    {es['Documents']}
-                                </CardTitle>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                                        {documents.length} {documents.length === 1 ? 'documento' : 'documentos'}
-                                    </span>
-                                    {uploadingDocuments && (
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600">
-                                            <Loader2 className="h-3 w-3 animate-spin" />
-                                            Subiendo...
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-9 w-9 p-0 hover:bg-purple-100 rounded-full transition-colors"
-                        >
-                            {documentsExpanded ? (
-                                <ChevronUp className="h-5 w-5 text-gray-600" />
-                            ) : (
-                                <ChevronDown className="h-5 w-5 text-gray-600" />
+                            <CardTitle className="flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-gray-600" />
+                                {es['Documents']}
+                                <span className="text-sm font-normal text-gray-500">
+                                    ({documents.length})
+                                </span>
+                            </CardTitle>
+                            {uploadingDocuments && (
+                                <span className="flex items-center gap-1.5 text-xs text-blue-600">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    Subiendo...
+                                </span>
                             )}
-                        </Button>
+                        </div>
                     </div>
                 </CardHeader>
 
-                {documentsExpanded && (
-                    <CardContent className="space-y-4 pt-4">
+                <CardContent className="space-y-4">
                         {!maintenanceId ? (
-                            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 border-l-4 border-yellow-400 rounded-lg shadow-sm">
-                                <div className="p-2 bg-white rounded-full">
-                                    <AlertCircle className="h-5 w-5 text-yellow-600" />
-                                </div>
-                                <p className="text-sm text-yellow-800 font-medium">
+                            <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                                <p className="text-sm text-yellow-800">
                                     {es['Save the maintenance first to upload documents']}
                                 </p>
                             </div>
@@ -361,18 +276,11 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
                             <>
                                 <div className="relative">
                                     <label className="block">
-                                        <div className="group relative flex items-center justify-center gap-3 px-6 py-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md">
-                                            <div className="p-2 bg-white rounded-lg group-hover:bg-purple-500 transition-colors">
-                                                <Upload className="h-5 w-5 text-purple-500 group-hover:text-white transition-colors" />
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-sm font-medium text-gray-700 group-hover:text-purple-700">
-                                                    {uploadingDocuments ? 'Subiendo documentos...' : 'Click para subir documentos'}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    PDF, DOC, DOCX, XLS, XLSX, TXT hasta 10MB
-                                                </p>
-                                            </div>
+                                        <div className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors cursor-pointer">
+                                            <Upload className="h-4 w-4 text-gray-500" />
+                                            <span className="text-sm text-gray-600">
+                                                {uploadingDocuments ? 'Subiendo...' : 'Click para subir documentos'}
+                                            </span>
                                         </div>
                                         <Input
                                             type="file"
@@ -385,99 +293,93 @@ export default function FileUploadSection({ maintenanceId, existingImages, exist
                                     </label>
                                 </div>
 
-                                {uploadingDocuments && (
-                                    <div className="flex items-center gap-3 text-sm text-purple-700 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200 shadow-sm">
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                        <div>
-                                            <p className="font-medium">Subiendo documentos...</p>
-                                            <p className="text-xs text-purple-600 mt-0.5">Por favor espere un momento</p>
-                                        </div>
-                                    </div>
-                                )}
-
                                 {documents.length > 0 && (
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h4 className="text-sm font-medium text-gray-700">
-                                                Documentos cargados ({documents.length})
-                                            </h4>
-                                        </div>
-                                        <div className="space-y-3">
-                                            {documents.map((document) => {
-                                                const fileExtension = document.mime_type?.split('/')[1]?.toUpperCase() || 'FILE';
-                                                const isPdf = document.mime_type === 'application/pdf';
+                                    <div className="space-y-2">
+                                        {documents.map((document) => {
+                                            const fileExtension = document.mime_type?.split('/')[1]?.toUpperCase() || 'FILE';
+                                            const isPdf = document.mime_type === 'application/pdf';
+                                            const isWord = document.mime_type?.includes('word') || document.mime_type?.includes('msword');
+                                            const isExcel = document.mime_type?.includes('sheet') || document.mime_type?.includes('excel');
+                                            const isPowerPoint = document.mime_type?.includes('presentation') || document.mime_type?.includes('powerpoint');
 
-                                                return (
-                                                    <div
-                                                        key={document.id}
-                                                        className="group relative flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:shadow-md transition-all duration-200 bg-white"
-                                                    >
-                                                        <div className={`flex-shrink-0 p-3 rounded-lg group-hover:scale-110 transition-transform duration-200 ${
-                                                            isPdf ? 'bg-red-100 group-hover:bg-red-200' : 'bg-purple-100 group-hover:bg-purple-200'
-                                                        }`}>
-                                                            <File className={`h-6 w-6 ${
-                                                                isPdf ? 'text-red-600' : 'text-purple-600'
-                                                            }`} />
+                                            // Determinar el color según el tipo de archivo
+                                            let bgColor = 'bg-gray-100';
+                                            let textColor = 'text-gray-600';
+
+                                            if (isPdf) {
+                                                bgColor = 'bg-red-100';
+                                                textColor = 'text-red-600';
+                                            } else if (isWord) {
+                                                bgColor = 'bg-blue-100';
+                                                textColor = 'text-blue-600';
+                                            } else if (isExcel) {
+                                                bgColor = 'bg-green-100';
+                                                textColor = 'text-green-600';
+                                            } else if (isPowerPoint) {
+                                                bgColor = 'bg-orange-100';
+                                                textColor = 'text-orange-600';
+                                            }
+
+                                            return (
+                                                <div
+                                                    key={document.id}
+                                                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50/50 transition-all group"
+                                                >
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className={`p-2 rounded ${bgColor}`}>
+                                                            <File className={`h-5 w-5 ${textColor}`} />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-purple-700 transition-colors" title={document.original_name}>
+                                                            <p className="text-sm font-medium truncate" title={document.original_name}>
                                                                 {document.original_name}
                                                             </p>
-                                                            <div className="flex items-center gap-3 mt-1.5">
+                                                            <div className="flex items-center gap-2 mt-0.5">
                                                                 {document.size && (
-                                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                                                                    <span className="text-xs text-gray-500">
                                                                         {formatFileSize(document.size)}
                                                                     </span>
                                                                 )}
-                                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold ${
-                                                                    isPdf ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'
-                                                                }`}>
-                                                                    {fileExtension}
-                                                                </span>
+                                                                {document.mime_type && (
+                                                                    <span className="text-xs text-gray-400">
+                                                                        {fileExtension}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
-                                                        <div className="flex gap-2">
-                                                            <Button
-                                                                type="button"
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() => handleDocumentDownload(document)}
-                                                                className="h-9 w-9 p-0 hover:bg-purple-50 hover:border-purple-500 transition-colors"
-                                                                title="Descargar documento"
-                                                            >
-                                                                <Download className="h-4 w-4 text-purple-600" />
-                                                            </Button>
-                                                            <Button
-                                                                type="button"
-                                                                size="sm"
-                                                                variant="destructive"
-                                                                onClick={() => handleDocumentDelete(document.id)}
-                                                                className="h-9 w-9 p-0 hover:bg-red-600 transition-colors shadow-sm"
-                                                                title="Eliminar documento"
-                                                            >
-                                                                <X className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            type="button"
+                                                            className="h-9 w-9 rounded-lg bg-white hover:bg-blue-500 text-gray-700 hover:text-white flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110 border border-gray-200"
+                                                            onClick={() => handleDocumentDownload(document)}
+                                                            title="Descargar documento"
+                                                        >
+                                                            <Download className="h-5 w-5" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="h-9 w-9 rounded-lg bg-white hover:bg-red-500 text-gray-700 hover:text-white flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110 border border-gray-200"
+                                                            onClick={() => handleDocumentDelete(document.id)}
+                                                            title="Eliminar documento"
+                                                        >
+                                                            <X className="h-5 w-5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
 
                                 {documents.length === 0 && !uploadingDocuments && (
-                                    <div className="text-center py-12 px-4">
-                                        <div className="inline-flex p-4 bg-gray-100 rounded-full mb-3">
-                                            <FileText className="h-10 w-10 text-gray-400" />
-                                        </div>
-                                        <p className="text-sm font-medium text-gray-600">No hay documentos cargados</p>
-                                        <p className="text-xs text-gray-500 mt-1">Sube documentos relacionados al mantenimiento</p>
+                                    <div className="text-center py-8 text-gray-400">
+                                        <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm">No hay documentos cargados</p>
                                     </div>
                                 )}
                             </>
                         )}
                     </CardContent>
-                )}
             </Card>
         </div>
     );

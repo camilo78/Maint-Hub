@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -63,5 +64,27 @@ class User extends Authenticatable
             'password' => 'hashed',             // Contraseña siempre encriptada
             'tipo' => 'string',                 // Tipo de usuario como string
         ];
+    }
+
+    // ========== RELACIONES ==========
+
+    /**
+     * Mantenimientos asignados a este técnico
+     */
+    public function assignedMaintenances(): BelongsToMany
+    {
+        return $this->belongsToMany(Maintenance::class, 'maintenance_user')
+            ->withPivot('is_leader')
+            ->withTimestamps();
+    }
+
+    /**
+     * Mantenimientos donde este técnico es líder
+     */
+    public function ledMaintenances(): BelongsToMany
+    {
+        return $this->belongsToMany(Maintenance::class, 'maintenance_user')
+            ->wherePivot('is_leader', true)
+            ->withTimestamps();
     }
 }

@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { X, Trash2, Plus, Edit } from 'lucide-react';
+import { X, Plus, Edit, FileText, Wrench } from 'lucide-react';
 import SparePartModal from './SparePartModal';
 import FileUploadSection from './FileUploadSection';
+import CrewAssignment from './CrewAssignment';
 import es from '@/lang/es';
 
 interface Client {
@@ -25,11 +26,33 @@ interface Equipment {
 }
 
 interface SparePart {
-    id: number;
+    id?: number;
     name: string;
     sku: string;
-    sale_price: number;
+    description?: string;
+    brand?: string;
+    part_number?: string;
+    sale_price?: number;
+    cost_price?: number;
     stock: number;
+    minimum_stock: number;
+    unit_measure: string;
+    location?: string;
+}
+
+interface Technician {
+    id: number;
+    name: string;
+    email?: string;
+    employee_id?: string;
+}
+
+interface CrewMember {
+    id: number;
+    name: string;
+    email?: string;
+    employee_id?: string;
+    is_leader: boolean;
 }
 
 interface MaintenanceData {
@@ -70,54 +93,63 @@ interface Props {
     clients: Client[];
     equipment: Equipment[];
     spareParts: SparePart[];
+    technicians?: Technician[];
+    assignedCrew?: CrewMember[];
     submitRoute: string;
     method: 'post' | 'put';
 }
 
-export default function MaintenanceForm({ 
-    maintenance, 
-    clients, 
-    equipment, 
-    spareParts, 
-    submitRoute, 
-    method 
+export default function MaintenanceForm({
+    maintenance,
+    clients,
+    equipment,
+    spareParts,
+    technicians = [],
+    assignedCrew = [],
+    submitRoute,
+    method
 }: Props) {
     const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
     const [equipmentSearch, setEquipmentSearch] = useState('');
     const [sparePartSearch, setSparePartSearch] = useState('');
+    const [selectedSparePartValue, setSelectedSparePartValue] = useState('');
     const [selectedSpareParts, setSelectedSpareParts] = useState<Array<{
         id: number;
         name: string;
+        sku: string;
         quantity: number;
         observations: string;
         sale_price: number;
+        unit_measure: string;
     }>>([]);
     const [isSparePartModalOpen, setIsSparePartModalOpen] = useState(false);
     const [editingSparePart, setEditingSparePart] = useState<SparePart | undefined>();
     const [availableSpareParts, setAvailableSpareParts] = useState<SparePart[]>(spareParts);
 
-    const { data, setData, post, put, processing, errors } = useForm({
+    const { data, setData, post, put, errors } = useForm({
         description: maintenance?.description || '',
         client_id: maintenance?.client_id ? maintenance.client_id.toString() : '',
         equipment_id: maintenance?.equipment_id ? maintenance.equipment_id.toString() : '',
         priority: maintenance?.priority || 'green',
         type: maintenance?.type || 'preventive',
         status: maintenance?.status || 'pending',
-        cost: maintenance?.cost ? maintenance.cost.toString() : '',
-        spare_parts: [],
-        images: [],
-        documents: []
+        cost: maintenance?.cost ? maintenance.cost.toString() : ''
     });
 
     useEffect(() => {
         if (maintenance?.spare_parts) {
-            const initialSpareParts = maintenance.spare_parts.map(sp => ({
-                id: sp.id,
-                name: sp.name,
-                quantity: sp.pivot.quantity,
-                observations: sp.pivot.observations || '',
-                sale_price: spareParts.find(s => s.id === sp.id)?.sale_price || 0
-            }));
+            const initialSpareParts = maintenance.spare_parts.map(sp => {
+                const fullSparePartData = spareParts.find(s => s.id === sp.id);
+                return {
+                    id: sp.id,
+                    name: sp.name,
+                    sku: fullSparePartData?.sku || '',
+                    quantity: sp.pivot.quantity,
+                    observations: sp.pivot.observations || '',
+                    sale_price: fullSparePartData?.sale_price || 0,
+                    unit_measure: fullSparePartData?.unit_measure || 'Unit'
+                };
+            });
             setSelectedSpareParts(initialSpareParts);
         }
     }, [maintenance, spareParts]);
@@ -155,20 +187,10 @@ export default function MaintenanceForm({
             setFilteredEquipment([]);
             setData('equipment_id', '');
         }
-    }, [data.client_id, equipment]);
+    }, [data.client_id, data.equipment_id, equipment, setData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
-        // Update data with spare parts before submission
-        setData({
-            ...data,
-            spare_parts: selectedSpareParts.map(sp => ({
-                id: sp.id,
-                quantity: sp.quantity,
-                observations: sp.observations
-            }))
-        });
 
         if (method === 'post') {
             post(route(submitRoute));
@@ -177,14 +199,15 @@ export default function MaintenanceForm({
         }
     };
 
-    // Agregar repuesto - En modo edición usa API, en modo creación usa estado local
+    // Agregar repuesto - Solo disponible en modo edición
     const addSparePart = async (sparePartId: number) => {
         const sparePart = availableSpareParts.find(sp => sp.id === sparePartId);
         if (!sparePart || selectedSpareParts.find(sp => sp.id === sparePartId)) {
+            setSelectedSparePartValue(''); // Resetear el select
             return;
         }
 
-        // En modo EDICIÓN: Crear la relación inmediatamente vía API
+        // Solo en modo EDICIÓN: Crear la relación inmediatamente vía API
         if (method === 'put' && maintenance?.id) {
             try {
                 await axios.post(
@@ -198,14 +221,19 @@ export default function MaintenanceForm({
 
                 // Agregar al estado local con los datos del servidor
                 setSelectedSpareParts([...selectedSpareParts, {
-                    id: sparePart.id,
+                    id: sparePart.id!,
                     name: sparePart.name,
                     quantity: 1,
                     observations: '',
-                    sale_price: sparePart.sale_price
+                    sale_price: sparePart.sale_price || 0,
+                    unit_measure: sparePart.unit_measure,
+                    sku: sparePart.sku
                 }]);
 
-                // Mensaje de éxito (opcional)
+                // Resetear el select después de agregar
+                setSelectedSparePartValue('');
+                setSparePartSearch('');
+
                 console.log('Repuesto agregado exitosamente');
             } catch (error) {
                 const errorMessage = error instanceof Error && 'response' in error
@@ -213,16 +241,8 @@ export default function MaintenanceForm({
                     : 'Error al agregar el repuesto';
                 alert(errorMessage);
                 console.error('Error:', error);
+                setSelectedSparePartValue(''); // Resetear incluso si hay error
             }
-        } else {
-            // En modo CREACIÓN: Solo agregar al estado local
-            setSelectedSpareParts([...selectedSpareParts, {
-                id: sparePart.id,
-                name: sparePart.name,
-                quantity: 1,
-                observations: '',
-                sale_price: sparePart.sale_price
-            }]);
         }
     };
 
@@ -255,10 +275,6 @@ export default function MaintenanceForm({
 
     // Eliminar repuesto - En modo edición elimina la relación vía API
     const removeSparePart = async (id: number) => {
-        if (!confirm('¿Está seguro de eliminar este repuesto?')) {
-            return;
-        }
-
         // En modo EDICIÓN: Eliminar relación vía API (detach)
         if (method === 'put' && maintenance?.id) {
             try {
@@ -296,7 +312,10 @@ export default function MaintenanceForm({
         <form id="maintenance-form" onSubmit={handleSubmit} className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>{es['Basic Information']}</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-gray-600" />
+                        {es['Basic Information']}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -414,94 +433,131 @@ export default function MaintenanceForm({
                         </div>
 
                         <div>
-                            <Label htmlFor="cost">{es['Cost']}</Label>
+                            <Label htmlFor="cost">
+                                {es['Cost']}
+                                {data.status === 'completed' && <span className="text-red-500 ml-1">*</span>}
+                            </Label>
                             <Input
                                 id="cost"
                                 type="number"
                                 step="0.01"
                                 value={data.cost}
                                 onChange={(e) => setData('cost', e.target.value)}
+                                required={data.status === 'completed'}
+                                className={data.status === 'completed' && !data.cost ? 'border-red-500' : ''}
                             />
+                            {data.status === 'completed' && !data.cost && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {es['El campo costo es obligatorio cuando el estado es Finalizado']}
+                                </p>
+                            )}
+                            {errors.cost && <p className="text-red-500 text-sm mt-1">{errors.cost}</p>}
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* SOLO MOSTRAR REPUESTOS EN MODO EDICIÓN */}
+            {/* CUADRILLA DE MANTENIMIENTO Y REPUESTOS EN 2 COLUMNAS */}
             {method === 'put' && maintenance?.id && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{es['Spare Parts']}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex gap-2">
-                            <div className="flex-1">
-                                <Label>{es['Add Spare Part']}</Label>
-                                <Select onValueChange={(value) => {
-                                    addSparePart(parseInt(value));
-                                    setSparePartSearch('');
-                                }}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={es['Select spare part']} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <div className="p-2 border-b">
-                                            <Input
-                                                placeholder={es['Search spare part...']}
-                                                value={sparePartSearch}
-                                                onChange={(e) => setSparePartSearch(e.target.value)}
-                                                className="h-8"
-                                            />
-                                        </div>
-                                        {availableSpareParts
-                                            .filter(sp =>
-                                                !selectedSpareParts.find(ssp => ssp.id === sp.id) &&
-                                                (sparePartSearch === '' ||
-                                                 sp.name.toLowerCase().includes(sparePartSearch.toLowerCase()) ||
-                                                 sp.sku.toLowerCase().includes(sparePartSearch.toLowerCase()))
-                                            )
-                                            .map(sparePart => (
-                                                <SelectItem key={sparePart.id} value={sparePart.id.toString()}>
-                                                    {sparePart.name} - {sparePart.sku} (Stock: {sparePart.stock})
-                                                </SelectItem>
-                                            ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="pt-6">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openSparePartModal()}
-                                >
-                                    <Plus className="h-4 w-4 mr-1" />
-                                    {es['New Spare Part']}
-                                </Button>
-                            </div>
-                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <CrewAssignment
+                        maintenanceId={maintenance.id}
+                        availableTechnicians={technicians}
+                        existingCrew={assignedCrew}
+                    />
 
-                        {selectedSpareParts.length > 0 && (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b">
-                                            <th className="text-left p-2">{es['Spare Parts']}</th>
-                                            <th className="text-left p-2">{es['Quantity']}</th>
-                                            <th className="text-left p-2">{es['Unit Price']}</th>
-                                            <th className="text-left p-2">{es['Subtotal']}</th>
-                                            <th className="text-left p-2">{es['Observations']}</th>
-                                            <th className="text-left p-2">{es['Actions']}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {selectedSpareParts.map(sparePart => {
-                                            const sparePartData = availableSpareParts.find(sp => sp.id === sparePart.id);
-                                            return (
-                                            <tr key={sparePart.id} className="border-b">
-                                                <td className="p-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="font-medium">{sparePart.name}</span>
+                    {/* REPUESTOS */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Wrench className="h-5 w-5 text-gray-600" />
+                                {es['Spare Parts']}
+                                <span className="text-sm font-normal text-gray-500">
+                                    ({selectedSpareParts.length})
+                                </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <Label>{es['Add Spare Part']}</Label>
+                                <div className="flex gap-2">
+                                    <Select
+                                        value={selectedSparePartValue}
+                                        onValueChange={(value) => {
+                                            setSelectedSparePartValue(value);
+                                            addSparePart(parseInt(value));
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={es['Select spare part']} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <div className="p-2 border-b">
+                                                <Input
+                                                    placeholder={es['Search spare part...']}
+                                                    value={sparePartSearch}
+                                                    onChange={(e) => setSparePartSearch(e.target.value)}
+                                                    className="h-8"
+                                                />
+                                            </div>
+                                            {availableSpareParts
+                                                .filter(sp =>
+                                                    !selectedSpareParts.find(ssp => ssp.id === sp.id) &&
+                                                    (sparePartSearch === '' ||
+                                                     sp.name.toLowerCase().includes(sparePartSearch.toLowerCase()) ||
+                                                     sp.sku.toLowerCase().includes(sparePartSearch.toLowerCase()))
+                                                )
+                                                .map(sparePart => (
+                                                    <SelectItem key={sparePart.id} value={sparePart.id.toString()}>
+                                                        {sparePart.name} - {sparePart.sku} (Stock: {sparePart.stock})
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => openSparePartModal()}
+                                        className="shrink-0"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+
+                            {selectedSpareParts.length > 0 && (
+                                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                                    {selectedSpareParts.map(sparePart => {
+                                        const sparePartData = availableSpareParts.find(sp => sp.id === sparePart.id);
+                                        const salePrice = Number(sparePart.sale_price) || 0;
+                                        const quantity = Number(sparePart.quantity) || 0;
+                                        const subtotal = quantity * salePrice;
+
+                                        return (
+                                            <div key={sparePart.id} className="border border-gray-200 rounded-lg p-2.5 hover:border-blue-300 hover:bg-blue-50/30 transition-all space-y-2">
+                                                {/* Header con nombre, precio y acciones */}
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-0.5">
+                                                            <h4 className="font-semibold text-sm text-gray-900 truncate" title={sparePart.name}>
+                                                                {sparePart.name}
+                                                            </h4>
+                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 shrink-0">
+                                                                {sparePart.sku}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-xs">
+                                                            <span className="text-gray-500">
+                                                                ${salePrice.toFixed(2)}/{sparePart.unit_measure}
+                                                            </span>
+                                                            <span className="text-gray-400">•</span>
+                                                            <span className="font-semibold text-blue-600">
+                                                                Total: ${subtotal.toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-1 shrink-0">
                                                         {sparePartData && (
                                                             <Button
                                                                 type="button"
@@ -509,49 +565,62 @@ export default function MaintenanceForm({
                                                                 variant="ghost"
                                                                 onClick={() => openSparePartModal(sparePartData)}
                                                                 className="h-6 w-6 p-0"
+                                                                title="Editar repuesto"
                                                             >
-                                                                <Edit className="h-3 w-3" />
+                                                                <Edit className="h-3 w-3 text-gray-600" />
                                                             </Button>
                                                         )}
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() => removeSparePart(sparePart.id)}
+                                                            className="h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600"
+                                                            title="Eliminar"
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </Button>
                                                     </div>
-                                                </td>
-                                                <td className="p-2">
-                                                    <Input
-                                                        type="number"
-                                                        min="1"
-                                                        value={sparePart.quantity}
-                                                        onChange={(e) => updateSparePart(sparePart.id, 'quantity', parseInt(e.target.value))}
-                                                        className="w-20"
-                                                    />
-                                                </td>
-                                                <td className="p-2">${sparePart.sale_price}</td>
-                                                <td className="p-2 font-medium">${(sparePart.quantity * sparePart.sale_price).toFixed(2)}</td>
-                                                <td className="p-2">
-                                                    <Input
-                                                        value={sparePart.observations}
-                                                        onChange={(e) => updateSparePart(sparePart.id, 'observations', e.target.value)}
-                                                        placeholder={es['Observations...']}
-                                                    />
-                                                </td>
-                                                <td className="p-2">
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => removeSparePart(sparePart.id)}
-                                                    >
-                                                        <X className="h-3 w-3" />
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                                </div>
+
+                                                {/* Cantidad y Observaciones en una fila */}
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    <div>
+                                                        <Label className="text-xs text-gray-600">{es['Quantity']}</Label>
+                                                        <Input
+                                                            type="number"
+                                                            min="1"
+                                                            value={sparePart.quantity}
+                                                            onChange={(e) => updateSparePart(sparePart.id, 'quantity', parseInt(e.target.value))}
+                                                            className="h-8 mt-0.5"
+                                                        />
+                                                    </div>
+                                                    <div className="col-span-2">
+                                                        <Label className="text-xs text-gray-600">{es['Observations']}</Label>
+                                                        <Input
+                                                            value={sparePart.observations}
+                                                            onChange={(e) => updateSparePart(sparePart.id, 'observations', e.target.value)}
+                                                            placeholder={es['Observations...']}
+                                                            className="h-8 mt-0.5 text-sm"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {selectedSpareParts.length === 0 && (
+                                <div className="text-center py-8 text-gray-400">
+                                    <Wrench className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm">No hay repuestos agregados</p>
+                                    <p className="text-xs text-gray-400 mt-1">Selecciona repuestos del menú superior</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             )}
 
             {method === 'put' && (

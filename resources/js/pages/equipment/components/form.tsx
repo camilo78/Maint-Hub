@@ -116,9 +116,9 @@ export default function EquipmentForm({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Cliente */}
                         <div className="space-y-2">
-                            <Label htmlFor="client_id">{es['Client']} *</Label>
+                            <Label>{es['Client']} *</Label>
                             <Select value={data.client_id} onValueChange={(value) => onChange('client_id', value)}>
-                                <SelectTrigger>
+                                <SelectTrigger id="client_id">
                                     <SelectValue placeholder={es['Select client']} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -183,9 +183,9 @@ export default function EquipmentForm({
 
                         {/* Estado */}
                         <div className="space-y-2">
-                            <Label htmlFor="status">{es['Status']} *</Label>
+                            <Label>{es['Status']} *</Label>
                             <Select value={data.status} onValueChange={(value) => onChange('status', value as 'buen_estado' | 'mal_estado' | 'mantenimiento')}>
-                                <SelectTrigger>
+                                <SelectTrigger id="status">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -305,7 +305,7 @@ export default function EquipmentForm({
                 <CardContent className="space-y-4">
                     {/* Notas */}
                     <div className="space-y-2">
-                        <Label htmlFor="notes">{es['Notes']}</Label>
+                        <Label>{es['Notes']}</Label>
                         <TipTapEditor
                             content={data.notes}
                             onChange={(content) => onChange('notes', content)}

@@ -7,6 +7,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\MaintenanceFileController;
+use App\Http\Controllers\MaintenanceAssignmentController;
 use App\Http\Controllers\SparePartController;
 
 Route::get('/', function () {
@@ -29,6 +30,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('maintenances/{maintenance}/spare-parts', [MaintenanceController::class, 'attachSparePart'])->name('maintenances.spare-parts.attach');
     Route::delete('maintenances/{maintenance}/spare-parts/{sparePart}', [MaintenanceController::class, 'detachSparePart'])->name('maintenances.spare-parts.detach');
     Route::put('maintenances/{maintenance}/spare-parts/{sparePart}', [MaintenanceController::class, 'updateSparePart'])->name('maintenances.spare-parts.update');
+
+    // Maintenance Crew Assignment routes (asignación de cuadrilla en vivo)
+    Route::post('maintenances/{maintenance}/crew', [MaintenanceAssignmentController::class, 'assignTechnician'])->name('maintenances.crew.assign');
+    Route::delete('maintenances/{maintenance}/crew/{user}', [MaintenanceAssignmentController::class, 'removeTechnician'])->name('maintenances.crew.remove');
+    Route::post('maintenances/{maintenance}/crew/leader', [MaintenanceAssignmentController::class, 'changeLeader'])->name('maintenances.crew.change-leader');
 
     // Spare Parts routes
     Route::post('spare-parts', [SparePartController::class, 'store'])->name('spare-parts.store');

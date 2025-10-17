@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import axios from 'axios';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,7 +43,6 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
         unit_measure: 'Unit',
         location: '',
     });
-    const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -92,7 +90,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
 
     const updateData = (field: string, value: string) => {
         const newData = { ...data, [field]: value };
-        
+
         // Auto-generate SKU only for new spare parts (not editing)
         if (!sparePart?.id && (field === 'name' || field === 'unit_measure')) {
             newData.sku = generateSKU(
@@ -100,42 +98,54 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                 field === 'unit_measure' ? value : data.unit_measure
             );
         }
-        
+
         setData(newData);
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setProcessing(true);
-        setErrors({});
-        
-        const submitData = {
-            ...data,
-            stock: parseInt(data.stock) || 0,
-            minimum_stock: parseInt(data.minimum_stock) || 5,
-            cost_price: data.cost_price ? parseFloat(data.cost_price) : null,
-            sale_price: data.sale_price ? parseFloat(data.sale_price) : null,
-        };
+    const handleBlur = async () => {
+        // Validar que tengamos los campos mínimos requeridos antes de guardar
+        if (!data.name || !data.sku || !data.unit_measure) {
+            return; // No guardar si faltan campos obligatorios
+        }
 
         try {
-            let response;
             if (sparePart?.id) {
-                response = await axios.put(`/spare-parts/${sparePart.id}`, submitData);
+                // MODO EDICIÓN: Actualizar repuesto existente
+                // Excluir SKU y name del envío porque son únicos y no se pueden modificar
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { sku, name, ...dataWithoutUniqueFields } = data;
+
+                const submitData = {
+                    ...dataWithoutUniqueFields,
+                    stock: parseInt(data.stock) || 0,
+                    minimum_stock: parseInt(data.minimum_stock) || 5,
+                    cost_price: data.cost_price ? parseFloat(data.cost_price) : null,
+                    sale_price: data.sale_price ? parseFloat(data.sale_price) : null,
+                };
+
+                const response = await window.axios.put(`/spare-parts/${sparePart.id}`, submitData);
+                onSuccess(response.data.sparePart);
             } else {
-                response = await axios.post('/spare-parts', submitData);
+                // MODO CREACIÓN: Crear nuevo repuesto automáticamente
+                const submitData = {
+                    ...data,
+                    stock: parseInt(data.stock) || 0,
+                    minimum_stock: parseInt(data.minimum_stock) || 5,
+                    cost_price: data.cost_price ? parseFloat(data.cost_price) : null,
+                    sale_price: data.sale_price ? parseFloat(data.sale_price) : null,
+                };
+
+                const response = await window.axios.post('/spare-parts', submitData);
+                onSuccess(response.data.sparePart);
+                handleClose();
             }
-            
-            onSuccess(response.data.sparePart);
-            handleClose();
         } catch (error: any) {
             if (error.response?.data?.errors) {
                 setErrors(error.response.data.errors);
             }
-        } finally {
-            setProcessing(false);
         }
     };
 
@@ -166,7 +176,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                     </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="name">{es['Name']} *</Label>
@@ -174,8 +184,15 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                                 id="name"
                                 value={data.name}
                                 onChange={(e) => updateData('name', e.target.value)}
+                                disabled={!!sparePart?.id}
+                                className={sparePart?.id ? "bg-gray-50 text-gray-600" : ""}
                                 required
                             />
+                            {sparePart?.id && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {es['No se puede modificar el nombre de repuestos existentes']}
+                                </p>
+                            )}
                             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                         </div>
 
@@ -186,10 +203,10 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                                 value={data.sku}
                                 disabled
                                 className="bg-gray-50 text-gray-600"
-                                placeholder={sparePart?.id ? 'SKU existente' : 'Se genera automáticamente'}
+                                placeholder={sparePart?.id ? es['SKU existente'] : es['Se genera automáticamente']}
                             />
                             <p className="text-xs text-gray-500 mt-1">
-                                {sparePart?.id ? 'No se puede modificar el SKU de repuestos existentes' : 'Se genera automáticamente basado en nombre y unidad'}
+                                {sparePart?.id ? es['No se puede modificar el SKU de repuestos existentes'] : es['Se genera automáticamente basado en nombre y unidad']}
                             </p>
                             {errors.sku && <p className="text-red-500 text-sm mt-1">{errors.sku}</p>}
                         </div>
@@ -201,6 +218,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                             id="description"
                             value={data.description}
                             onChange={(e) => updateData('description', e.target.value)}
+                            onBlur={handleBlur}
                             rows={3}
                         />
                         {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
@@ -213,6 +231,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                                 id="brand"
                                 value={data.brand}
                                 onChange={(e) => updateData('brand', e.target.value)}
+                                onBlur={handleBlur}
                             />
                             {errors.brand && <p className="text-red-500 text-sm mt-1">{errors.brand}</p>}
                         </div>
@@ -223,6 +242,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                                 id="part_number"
                                 value={data.part_number}
                                 onChange={(e) => updateData('part_number', e.target.value)}
+                                onBlur={handleBlur}
                             />
                             {errors.part_number && <p className="text-red-500 text-sm mt-1">{errors.part_number}</p>}
                         </div>
@@ -237,6 +257,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                                 min="0"
                                 value={data.stock}
                                 onChange={(e) => updateData('stock', e.target.value)}
+                                onBlur={handleBlur}
                                 required
                             />
                             {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock}</p>}
@@ -250,6 +271,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                                 min="0"
                                 value={data.minimum_stock}
                                 onChange={(e) => updateData('minimum_stock', e.target.value)}
+                                onBlur={handleBlur}
                                 required
                             />
                             {errors.minimum_stock && <p className="text-red-500 text-sm mt-1">{errors.minimum_stock}</p>}
@@ -257,7 +279,10 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
 
                         <div>
                             <Label htmlFor="unit_measure">{es['Unit Measure']} *</Label>
-                            <Select value={data.unit_measure} onValueChange={(value) => updateData('unit_measure', value)}>
+                            <Select value={data.unit_measure} onValueChange={async (value) => {
+                                updateData('unit_measure', value);
+                                if (sparePart?.id) await handleBlur();
+                            }}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
@@ -284,6 +309,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                                 min="0"
                                 value={data.cost_price}
                                 onChange={(e) => updateData('cost_price', e.target.value)}
+                                onBlur={handleBlur}
                             />
                             {errors.cost_price && <p className="text-red-500 text-sm mt-1">{errors.cost_price}</p>}
                         </div>
@@ -297,6 +323,7 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                                 min="0"
                                 value={data.sale_price}
                                 onChange={(e) => updateData('sale_price', e.target.value)}
+                                onBlur={handleBlur}
                             />
                             {errors.sale_price && <p className="text-red-500 text-sm mt-1">{errors.sale_price}</p>}
                         </div>
@@ -308,20 +335,19 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
                             id="location"
                             value={data.location}
                             onChange={(e) => updateData('location', e.target.value)}
+                            onBlur={handleBlur}
                             placeholder={es['Storage location...']}
                         />
                         {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                     </div>
 
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={handleClose}>
-                            {es['Cancel']}
-                        </Button>
-                        <Button type="submit" disabled={processing}>
-                            {processing ? es['Saving...'] : es['Save']}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                </div>
+
+                <DialogFooter className="mt-6">
+                    <Button type="button" onClick={handleClose} className="w-full sm:w-auto">
+                        {es['Close']}
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
