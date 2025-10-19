@@ -190,7 +190,7 @@ export default function CrewAssignment({ maintenanceId, availableTechnicians, ex
                                                         <span className="text-xs text-gray-500 truncate">{member.email}</span>
                                                     )}
                                                     {member.employee_id && (
-                                                        <span className="text-xs text-gray-400">ID: {member.employee_id}</span>
+                                                        <span className="text-xs text-gray-500">ID: {member.employee_id}</span>
                                                     )}
                                                 </div>
                                             </div>

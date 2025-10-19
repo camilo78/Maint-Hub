@@ -535,56 +535,60 @@ export default function MaintenanceForm({
                                         const subtotal = quantity * salePrice;
 
                                         return (
-                                            <div key={sparePart.id} className="border border-gray-200 rounded-lg p-2.5 hover:border-blue-300 hover:bg-blue-50/30 transition-all space-y-2">
+                                            <div key={sparePart.id} className="border border-gray-100 dark:border-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
                                                 {/* Header con nombre, precio y acciones */}
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-0.5">
-                                                            <h4 className="font-semibold text-sm text-gray-900 truncate" title={sparePart.name}>
+                                                <div className="flex items-center justify-between p-3">
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className="flex flex-col flex-1 min-w-0">
+                                                            <span className="text-sm font-medium flex items-center gap-2">
                                                                 {sparePart.name}
-                                                            </h4>
-                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 shrink-0">
-                                                                {sparePart.sku}
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
+                                                                    {sparePart.sku}
+                                                                </span>
                                                             </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 text-xs">
-                                                            <span className="text-gray-500">
-                                                                ${salePrice.toFixed(2)}/{sparePart.unit_measure}
-                                                            </span>
-                                                            <span className="text-gray-400">•</span>
-                                                            <span className="font-semibold text-blue-600">
-                                                                Total: ${subtotal.toFixed(2)}
-                                                            </span>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <span className="text-xs text-gray-500">
+                                                                    ${salePrice.toFixed(2)}/{sparePart.unit_measure}
+                                                                </span>
+                                                                {subtotal > 0 && (
+                                                                    <>
+                                                                        <span className="text-xs text-gray-400">•</span>
+                                                                        <span className="text-xs text-gray-500">
+                                                                            Total: ${subtotal.toFixed(2)}
+                                                                        </span>
+                                                                    </>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex gap-1 shrink-0">
+                                                    <div className="flex gap-2">
                                                         {sparePartData && (
                                                             <Button
                                                                 type="button"
                                                                 size="sm"
-                                                                variant="ghost"
+                                                                variant="outline"
                                                                 onClick={() => openSparePartModal(sparePartData)}
-                                                                className="h-6 w-6 p-0"
+                                                                className="h-8 w-8 p-0"
                                                                 title="Editar repuesto"
                                                             >
-                                                                <Edit className="h-3 w-3 text-gray-600" />
+                                                                <Edit className="h-4 w-4" />
                                                             </Button>
                                                         )}
                                                         <Button
                                                             type="button"
                                                             size="sm"
-                                                            variant="ghost"
+                                                            variant="outline"
                                                             onClick={() => removeSparePart(sparePart.id)}
-                                                            className="h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600"
+                                                            className="h-8 w-8 p-0"
                                                             title="Eliminar"
                                                         >
-                                                            <X className="h-3 w-3" />
+                                                            <X className="h-4 w-4" />
                                                         </Button>
                                                     </div>
                                                 </div>
 
                                                 {/* Cantidad y Observaciones en una fila */}
-                                                <div className="grid grid-cols-3 gap-2">
+                                                <div className="grid grid-cols-3 gap-2 px-3 pb-3">
                                                     <div>
                                                         <Label className="text-xs text-gray-600">{es['Quantity']}</Label>
                                                         <Input

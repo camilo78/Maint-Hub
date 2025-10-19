@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Package, Wrench, DollarSign, MapPin, Loader2, AlertCircle, CheckCircle2, Tag } from 'lucide-react';
 import es from '@/lang/es';
 
 interface SparePart {
@@ -167,184 +169,274 @@ export default function SparePartModal({ isOpen, onClose, sparePart, onSuccess }
         onClose();
     };
 
+    const [loading, setLoading] = useState(false);
+
+    const handleBlurWithLoading = async () => {
+        setLoading(true);
+        await handleBlur();
+        setLoading(false);
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>
-                        {sparePart?.id ? es['Edit Spare Part'] : es['New Spare Part']}
-                    </DialogTitle>
+                    <div className="flex items-center gap-2">
+                        <Package className="h-6 w-6 text-gray-600" />
+                        <DialogTitle>
+                            {sparePart?.id ? es['Edit Spare Part'] : es['New Spare Part']}
+                        </DialogTitle>
+                        {loading && <Loader2 className="h-4 w-4 animate-spin text-blue-600" />}
+                    </div>
                 </DialogHeader>
 
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="name">{es['Name']} *</Label>
-                            <Input
-                                id="name"
-                                value={data.name}
-                                onChange={(e) => updateData('name', e.target.value)}
-                                disabled={!!sparePart?.id}
-                                className={sparePart?.id ? "bg-gray-50 text-gray-600" : ""}
-                                required
-                            />
-                            {sparePart?.id && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                    {es['No se puede modificar el nombre de repuestos existentes']}
-                                </p>
-                            )}
-                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-                        </div>
+                <div className="space-y-6">
+                    {/* Información básica */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Tag className="h-5 w-5 text-gray-600" />
+                                <h3 className="text-sm font-semibold">Información Básica</h3>
+                            </div>
 
-                        <div>
-                            <Label htmlFor="sku">SKU *</Label>
-                            <Input
-                                id="sku"
-                                value={data.sku}
-                                disabled
-                                className="bg-gray-50 text-gray-600"
-                                placeholder={sparePart?.id ? es['SKU existente'] : es['Se genera automáticamente']}
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                {sparePart?.id ? es['No se puede modificar el SKU de repuestos existentes'] : es['Se genera automáticamente basado en nombre y unidad']}
-                            </p>
-                            {errors.sku && <p className="text-red-500 text-sm mt-1">{errors.sku}</p>}
-                        </div>
-                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="name" className="flex items-center gap-1">
+                                        {es['Name']} <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => updateData('name', e.target.value)}
+                                        disabled={!!sparePart?.id}
+                                        className={sparePart?.id ? "bg-gray-50 text-gray-600" : ""}
+                                        required
+                                    />
+                                    {sparePart?.id && (
+                                        <div className="flex items-center gap-2 mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                            <AlertCircle className="h-3 w-3 text-yellow-600 flex-shrink-0" />
+                                            <p className="text-xs text-yellow-800">
+                                                {es['No se puede modificar el nombre de repuestos existentes']}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                                </div>
 
-                    <div>
-                        <Label htmlFor="description">{es['Description']}</Label>
-                        <Textarea
-                            id="description"
-                            value={data.description}
-                            onChange={(e) => updateData('description', e.target.value)}
-                            onBlur={handleBlur}
-                            rows={3}
-                        />
-                        {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-                    </div>
+                                <div>
+                                    <Label htmlFor="sku" className="flex items-center gap-1">
+                                        SKU <span className="text-red-500">*</span>
+                                    </Label>
+                                    <div className="relative">
+                                        <Input
+                                            id="sku"
+                                            value={data.sku}
+                                            disabled
+                                            className="bg-gray-50 text-gray-600"
+                                            placeholder={sparePart?.id ? es['SKU existente'] : es['Se genera automáticamente']}
+                                        />
+                                        {data.sku && !sparePart?.id && (
+                                            <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {sparePart?.id ? es['No se puede modificar el SKU de repuestos existentes'] : es['Se genera automáticamente basado en nombre y unidad']}
+                                    </p>
+                                    {errors.sku && <p className="text-red-500 text-sm mt-1">{errors.sku}</p>}
+                                </div>
+                            </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="brand">{es['Brand']}</Label>
-                            <Input
-                                id="brand"
-                                value={data.brand}
-                                onChange={(e) => updateData('brand', e.target.value)}
-                                onBlur={handleBlur}
-                            />
-                            {errors.brand && <p className="text-red-500 text-sm mt-1">{errors.brand}</p>}
-                        </div>
+                            <div className="mt-4">
+                                <Label htmlFor="description">{es['Description']}</Label>
+                                <Textarea
+                                    id="description"
+                                    value={data.description}
+                                    onChange={(e) => updateData('description', e.target.value)}
+                                    onBlur={handleBlurWithLoading}
+                                    rows={3}
+                                    className="resize-none"
+                                />
+                                {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <div>
-                            <Label htmlFor="part_number">{es['Part Number']}</Label>
-                            <Input
-                                id="part_number"
-                                value={data.part_number}
-                                onChange={(e) => updateData('part_number', e.target.value)}
-                                onBlur={handleBlur}
-                            />
-                            {errors.part_number && <p className="text-red-500 text-sm mt-1">{errors.part_number}</p>}
-                        </div>
-                    </div>
+                    {/* Detalles técnicos */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Wrench className="h-5 w-5 text-gray-600" />
+                                <h3 className="text-sm font-semibold">Detalles Técnicos</h3>
+                            </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <Label htmlFor="stock">{es['Stock']} *</Label>
-                            <Input
-                                id="stock"
-                                type="number"
-                                min="0"
-                                value={data.stock}
-                                onChange={(e) => updateData('stock', e.target.value)}
-                                onBlur={handleBlur}
-                                required
-                            />
-                            {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock}</p>}
-                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="brand">{es['Brand']}</Label>
+                                    <Input
+                                        id="brand"
+                                        value={data.brand}
+                                        onChange={(e) => updateData('brand', e.target.value)}
+                                        onBlur={handleBlurWithLoading}
+                                    />
+                                    {errors.brand && <p className="text-red-500 text-sm mt-1">{errors.brand}</p>}
+                                </div>
 
-                        <div>
-                            <Label htmlFor="minimum_stock">{es['Minimum Stock']} *</Label>
-                            <Input
-                                id="minimum_stock"
-                                type="number"
-                                min="0"
-                                value={data.minimum_stock}
-                                onChange={(e) => updateData('minimum_stock', e.target.value)}
-                                onBlur={handleBlur}
-                                required
-                            />
-                            {errors.minimum_stock && <p className="text-red-500 text-sm mt-1">{errors.minimum_stock}</p>}
-                        </div>
+                                <div>
+                                    <Label htmlFor="part_number">{es['Part Number']}</Label>
+                                    <Input
+                                        id="part_number"
+                                        value={data.part_number}
+                                        onChange={(e) => updateData('part_number', e.target.value)}
+                                        onBlur={handleBlurWithLoading}
+                                    />
+                                    {errors.part_number && <p className="text-red-500 text-sm mt-1">{errors.part_number}</p>}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <div>
-                            <Label htmlFor="unit_measure">{es['Unit Measure']} *</Label>
-                            <Select value={data.unit_measure} onValueChange={async (value) => {
-                                updateData('unit_measure', value);
-                                if (sparePart?.id) await handleBlur();
-                            }}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Unit">{es['Unit']}</SelectItem>
-                                    <SelectItem value="Piece">{es['Piece']}</SelectItem>
-                                    <SelectItem value="Meter">{es['Meter']}</SelectItem>
-                                    <SelectItem value="Kilogram">{es['Kilogram']}</SelectItem>
-                                    <SelectItem value="Liter">{es['Liter']}</SelectItem>
-                                    <SelectItem value="Box">{es['Box']}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {errors.unit_measure && <p className="text-red-500 text-sm mt-1">{errors.unit_measure}</p>}
-                        </div>
-                    </div>
+                    {/* Inventario */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Package className="h-5 w-5 text-gray-600" />
+                                <h3 className="text-sm font-semibold">Inventario</h3>
+                            </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="cost_price">{es['Cost Price']}</Label>
-                            <Input
-                                id="cost_price"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={data.cost_price}
-                                onChange={(e) => updateData('cost_price', e.target.value)}
-                                onBlur={handleBlur}
-                            />
-                            {errors.cost_price && <p className="text-red-500 text-sm mt-1">{errors.cost_price}</p>}
-                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <Label htmlFor="stock" className="flex items-center gap-1">
+                                        {es['Stock']} <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="stock"
+                                        type="number"
+                                        min="0"
+                                        value={data.stock}
+                                        onChange={(e) => updateData('stock', e.target.value)}
+                                        onBlur={handleBlurWithLoading}
+                                        required
+                                    />
+                                    {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock}</p>}
+                                </div>
 
-                        <div>
-                            <Label htmlFor="sale_price">{es['Sale Price']}</Label>
-                            <Input
-                                id="sale_price"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={data.sale_price}
-                                onChange={(e) => updateData('sale_price', e.target.value)}
-                                onBlur={handleBlur}
-                            />
-                            {errors.sale_price && <p className="text-red-500 text-sm mt-1">{errors.sale_price}</p>}
-                        </div>
-                    </div>
+                                <div>
+                                    <Label htmlFor="minimum_stock" className="flex items-center gap-1">
+                                        {es['Minimum Stock']} <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="minimum_stock"
+                                        type="number"
+                                        min="0"
+                                        value={data.minimum_stock}
+                                        onChange={(e) => updateData('minimum_stock', e.target.value)}
+                                        onBlur={handleBlurWithLoading}
+                                        required
+                                    />
+                                    {errors.minimum_stock && <p className="text-red-500 text-sm mt-1">{errors.minimum_stock}</p>}
+                                </div>
 
-                    <div>
-                        <Label htmlFor="location">{es['Location']}</Label>
-                        <Input
-                            id="location"
-                            value={data.location}
-                            onChange={(e) => updateData('location', e.target.value)}
-                            onBlur={handleBlur}
-                            placeholder={es['Storage location...']}
-                        />
-                        {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
-                    </div>
+                                <div>
+                                    <Label htmlFor="unit_measure" className="flex items-center gap-1">
+                                        {es['Unit Measure']} <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Select value={data.unit_measure} onValueChange={async (value) => {
+                                        updateData('unit_measure', value);
+                                        if (sparePart?.id) {
+                                            setLoading(true);
+                                            await handleBlur();
+                                            setLoading(false);
+                                        }
+                                    }}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Unit">{es['Unit']}</SelectItem>
+                                            <SelectItem value="Piece">{es['Piece']}</SelectItem>
+                                            <SelectItem value="Meter">{es['Meter']}</SelectItem>
+                                            <SelectItem value="Kilogram">{es['Kilogram']}</SelectItem>
+                                            <SelectItem value="Liter">{es['Liter']}</SelectItem>
+                                            <SelectItem value="Box">{es['Box']}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.unit_measure && <p className="text-red-500 text-sm mt-1">{errors.unit_measure}</p>}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
+                    {/* Precios */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <DollarSign className="h-5 w-5 text-gray-600" />
+                                <h3 className="text-sm font-semibold">Precios</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="cost_price">{es['Cost Price']}</Label>
+                                    <Input
+                                        id="cost_price"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={data.cost_price}
+                                        onChange={(e) => updateData('cost_price', e.target.value)}
+                                        onBlur={handleBlurWithLoading}
+                                    />
+                                    {errors.cost_price && <p className="text-red-500 text-sm mt-1">{errors.cost_price}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="sale_price">{es['Sale Price']}</Label>
+                                    <Input
+                                        id="sale_price"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={data.sale_price}
+                                        onChange={(e) => updateData('sale_price', e.target.value)}
+                                        onBlur={handleBlurWithLoading}
+                                    />
+                                    {errors.sale_price && <p className="text-red-500 text-sm mt-1">{errors.sale_price}</p>}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Ubicación */}
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <MapPin className="h-5 w-5 text-gray-600" />
+                                <h3 className="text-sm font-semibold">Ubicación</h3>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="location">{es['Location']}</Label>
+                                <Input
+                                    id="location"
+                                    value={data.location}
+                                    onChange={(e) => updateData('location', e.target.value)}
+                                    onBlur={handleBlurWithLoading}
+                                    placeholder={es['Storage location...']}
+                                />
+                                {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <DialogFooter className="mt-6">
-                    <Button type="button" onClick={handleClose} className="w-full sm:w-auto">
+                    <Button
+                        type="button"
+                        onClick={handleClose}
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                        disabled={loading}
+                    >
                         {es['Close']}
                     </Button>
                 </DialogFooter>

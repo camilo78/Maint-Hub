@@ -3,7 +3,9 @@ import { router } from '@inertiajs/react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Upload, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { X, Upload, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import es from '@/lang/es';
 
 interface Image {
@@ -64,54 +66,94 @@ export default function ImageUploader({ maintenanceId, existingImages }: Props) 
     };
 
     return (
-        <div className="space-y-4">
-            <div>
-                <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleUpload}
-                    disabled={!maintenanceId || uploading}
-                />
-                {!maintenanceId && (
-                    <p className="text-sm text-gray-500 mt-2">
-                        {es['Save the maintenance first to upload images']}
-                    </p>
-                )}
-            </div>
-
-            {uploading && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {es['Uploading...']}
-                </div>
-            )}
-
-            {images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {images.map((image) => (
-                        <div key={image.id} className="relative group">
-                            <img
-                                src={`/storage/${image.path}`}
-                                alt={image.original_name}
-                                className="w-full h-32 object-cover rounded-lg"
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-gray-600" />
+                    Imágenes
+                    <span className="text-sm font-normal text-gray-500">
+                        ({images.length})
+                    </span>
+                    {uploading && <Loader2 className="h-4 w-4 animate-spin text-blue-600" />}
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {!maintenanceId ? (
+                    <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                        <p className="text-sm text-yellow-800">
+                            {es['Save the maintenance first to upload images']}
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <div>
+                            <Label htmlFor="image-upload" className="flex items-center gap-2 mb-2">
+                                <Upload className="h-4 w-4" />
+                                Cargar Imágenes
+                            </Label>
+                            <Input
+                                id="image-upload"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleUpload}
+                                disabled={uploading}
+                                className="cursor-pointer"
                             />
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant="destructive"
-                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => handleDelete(image.id)}
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
-                            <p className="text-xs text-gray-600 mt-1 truncate">
-                                {image.original_name}
+                            <p className="text-xs text-gray-500 mt-2">
+                                Formatos aceptados: JPG, PNG, GIF, WebP
                             </p>
                         </div>
-                    ))}
-                </div>
-            )}
-        </div>
+
+                        {images.length > 0 && (
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {images.map((image) => (
+                                        <div
+                                            key={image.id}
+                                            className="relative group border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden transition-colors hover:bg-gray-50"
+                                        >
+                                            <div className="aspect-square">
+                                                <img
+                                                    src={`/storage/${image.path}`}
+                                                    alt={image.original_name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => handleDelete(image.id)}
+                                                    className="h-8 w-8 p-0 bg-background shadow-xs"
+                                                    title="Eliminar imagen"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                                                <p className="text-xs text-white truncate" title={image.original_name}>
+                                                    {image.original_name}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {images.length === 0 && !uploading && (
+                            <div className="text-center py-12 text-gray-400">
+                                <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">No hay imágenes cargadas</p>
+                                <p className="text-xs text-gray-400 mt-1">Usa el botón de arriba para cargar imágenes</p>
+                            </div>
+                        )}
+                    </>
+                )}
+            </CardContent>
+        </Card>
     );
 }
