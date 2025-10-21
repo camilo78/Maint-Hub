@@ -7,7 +7,14 @@
       "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan route:clear)",
       "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan route:list --name=maintenances)",
       "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan make:migration create_maintenance_user_table)",
-      "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan make:controller MaintenanceAssignmentController)"
+      "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan make:controller MaintenanceAssignmentController)",
+      "Bash(/c/laragon/bin/php/php-8.3.26-Win32-vs16-x64/php.exe artisan make:migration create_cai_autorizaciones_table)",
+      "Bash(npm install @radix-ui/react-progress)",
+      "Bash(php -r \"json_decode(file_get_contents(''resources/lang/es.json'')); echo ''es.json: Valid JSON'' . PHP_EOL;\")",
+      "Bash(php -r \"json_decode(file_get_contents(''resources/lang/en.json'')); echo ''en.json: Valid JSON'' . PHP_EOL;\")",
+      "Bash(cat .env)",
+      "Bash(php -m)",
+      "Bash(php -v)"
     ],
     "deny": [],
     "ask": []

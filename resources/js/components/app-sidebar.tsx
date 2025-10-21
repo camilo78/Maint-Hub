@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, BookKey, Users, BookOpen, Folder, Wrench, Monitor, Settings } from 'lucide-react';
+import { LayoutGrid, BookKey, Users, BookOpen, Folder, Wrench, Monitor, Settings, FileText } from 'lucide-react';
 import AppLogo from './app-logo';
 import { type SharedData } from '@/types';
 import es from '@/lang/es';
@@ -16,7 +16,7 @@ export function AppSidebar() {
     const isAdmin = roles.includes('Admin') || roles.includes('Superadmin');
     const mainNavItems: NavItem[] = [
         {
-            title: es['Dashboard'],    
+            title: es['Dashboard'],
             href: '/dashboard',
             icon: LayoutGrid,
         },
@@ -30,15 +30,25 @@ export function AppSidebar() {
             href: '/maintenances',
             icon: Settings,
         },
+        {
+            title: es['Invoices'],
+            href: '/facturas',
+            icon: FileText,
+        },
         ...(isAdmin ? [{
-            title: es['Clients'],    
+            title: es['Clients'],
             href: '/admin/clients',
             icon: Users,
         },
         {
-            title: es['Employees'] || 'Empleados',    
+            title: es['Employees'] || 'Empleados',
             href: '/admin/employees',
             icon: Wrench,
+        },
+        {
+            title: es['CAI Management'],
+            href: '/cai',
+            icon: BookKey,
         }] : []),
     ];
     

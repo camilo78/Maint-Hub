@@ -94,6 +94,11 @@ class Maintenance extends Model
             ->withTimestamps();
     }
 
+    public function factura(): HasMany
+    {
+        return $this->hasMany(Factura::class, 'mantenimiento_id');
+    }
+
     // ========== ACCESSORS ==========
 
     /**
@@ -241,6 +246,22 @@ class Maintenance extends Model
         return $this->status === self::STATUS_PENDING;
     }
 
+    /**
+     * Verificar si el mantenimiento es facturable
+     */
+    public function getIsFacturableAttribute(): bool
+    {
+        return $this->status === self::STATUS_COMPLETED && !$this->factura()->exists();
+    }
+
+    /**
+     * Verificar si el mantenimiento ya fue facturado
+     */
+    public function getIsFacturadoAttribute(): bool
+    {
+        return $this->factura()->exists();
+    }
+
     // ========== SCOPES ==========
 
     /**
@@ -337,6 +358,23 @@ class Maintenance extends Model
                 ELSE 5
             END
         ");
+    }
+
+    /**
+     * Filtrar mantenimientos facturables (completados sin factura)
+     */
+    public function scopeFacturables(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_COMPLETED)
+            ->whereDoesntHave('factura');
+    }
+
+    /**
+     * Filtrar mantenimientos ya facturados
+     */
+    public function scopeFacturados(Builder $query): Builder
+    {
+        return $query->whereHas('factura');
     }
 
     // ========== MÉTODOS ÚTILES ==========

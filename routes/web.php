@@ -9,6 +9,8 @@ use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\MaintenanceFileController;
 use App\Http\Controllers\MaintenanceAssignmentController;
 use App\Http\Controllers\SparePartController;
+use App\Http\Controllers\FacturaController;
+use App\Http\Controllers\CaiAutorizacionController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -39,6 +41,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Spare Parts routes
     Route::post('spare-parts', [SparePartController::class, 'store'])->name('spare-parts.store');
     Route::put('spare-parts/{sparePart}', [SparePartController::class, 'update'])->name('spare-parts.update');
+
+    // ==================== MÓDULO DE FACTURACIÓN ELECTRÓNICA ====================
+
+    // CAI Autorizaciones (Gestión de rangos de facturación del SAR)
+    Route::prefix('cai')->name('cai.')->group(function () {
+        Route::get('/', [CaiAutorizacionController::class, 'index'])->name('index');
+        Route::get('/create', [CaiAutorizacionController::class, 'create'])->name('create');
+        Route::post('/', [CaiAutorizacionController::class, 'store'])->name('store');
+        Route::get('/{cai}', [CaiAutorizacionController::class, 'show'])->name('show');
+        Route::post('/{cai}/desactivar', [CaiAutorizacionController::class, 'desactivar'])->name('desactivar');
+        Route::post('/{cai}/reactivar', [CaiAutorizacionController::class, 'reactivar'])->name('reactivar');
+    });
+
+    // Facturas (Emisión y gestión de facturas fiscales)
+    Route::prefix('facturas')->name('facturas.')->group(function () {
+        Route::get('/', [FacturaController::class, 'index'])->name('index');
+        Route::get('/create', [FacturaController::class, 'create'])->name('create');
+        Route::post('/', [FacturaController::class, 'store'])->name('store');
+        Route::get('/{factura}', [FacturaController::class, 'show'])->name('show');
+        Route::post('/{factura}/anular', [FacturaController::class, 'anular'])->name('anular');
+        Route::get('/{factura}/pdf', [FacturaController::class, 'generarPDF'])->name('pdf');
+        Route::post('/{factura}/marcar-impresa', [FacturaController::class, 'marcarImpresa'])->name('marcar-impresa');
+    });
+
+    // ========================================================================
 });
 
 
