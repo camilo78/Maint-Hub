@@ -61,39 +61,3 @@ Sigue estos pasos para configurar el proyecto en tu entorno de desarrollo local.
     
 *   Un servidor de base de datos (MySQL, PostgreSQL)
     
-
-### **1\. Clonar el Repositorio**
-
-Bash
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   git clone https://github.com/camilo78/Maint-Hub.git  cd Maint-Hub   `
-
-### **2\. Configuración del Backend (Laravel)**
-
-Bash
-
-  # Navega a la carpeta del backend  cd backend  
-  # Instala las dependencias de PHP  composer install  
-  # Copia el archivo de variables de entorno  cp .env.example .env  
-  # Genera la clave de la aplicación  php artisan key:generate  
-  # Configura tus credenciales de base de datos en el archivo .env  # DB_CONNECTION=mysql  # DB_HOST=127.0.0.1  # DB_PORT=3306  # DB_DATABASE=maint_hub  # DB_USERNAME=root  # DB_PASSWORD=  # Ejecuta las migraciones y los seeders para poblar la base de datos con datos de prueba  php artisan migrate --seed  # Inicia el servidor del backend  php artisan serve   `
-
-Tu API estará disponible en http://localhost:8000.
-
-### **3\. Configuración del Frontend (React)**
-
-Bash
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   # Regresa a la raíz y navega a la carpeta del frontend  cd ../frontend  # Instala las dependencias de JavaScript  npm install  # (Opcional) Crea un archivo .env.local para apuntar a la URL de tu API  # VITE_API_BASE_URL=http://localhost:8000/api  # Inicia el servidor de desarrollo de Vite  npm run dev   `
-
-Tu aplicación de React estará disponible en la URL que indique Vite (generalmente http://localhost:5173).
-
-🤝 Contribuciones
------------------
-
-Las contribuciones son más que bienvenidas. Si tienes una idea para mejorar el proyecto, por favor, abre un _issue_ para discutirlo o envía directamente un _Pull Request_ con tus cambios.
-
-📄 Licencia
------------
-
-Este proyecto está bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
