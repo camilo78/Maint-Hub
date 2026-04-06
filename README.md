@@ -42,3 +42,5 @@ La aplicación está construida con un stack moderno y potente:
 -   **Autorización:** **Spatie Laravel Permission**
     
 -   **UI/Estilos:** **Tailwind CSS** y **Shadcn UI**
+
+Copyright © 2026 Camilo Alvarado. Todos los derechos reservados.
